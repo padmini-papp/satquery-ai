@@ -1,0 +1,248 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>SatQuery AI - Processing</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@500;600;700&amp;family=Inter:wght@400&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#46d89d",
+                        "surface-dim": "#0c1324",
+                        "on-secondary-container": "#e9f6ff",
+                        "inverse-primary": "#006877",
+                        "surface-container-highest": "#2e3447",
+                        "error-container": "#93000a",
+                        "surface-container-lowest": "#070d1f",
+                        "surface": "#0c1324",
+                        "error": "#ffb4ab",
+                        "on-tertiary-container": "#005a3d",
+                        "outline": "#859397",
+                        "background": "#0c1324",
+                        "inverse-surface": "#dce1fb",
+                        "secondary-fixed": "#c0e8ff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-primary": "#00363e",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary": "#003547",
+                        "on-primary-fixed-variant": "#004e5a",
+                        "on-secondary-fixed-variant": "#004d66",
+                        "surface-container": "#191f31",
+                        "on-error": "#690005",
+                        "on-background": "#dce1fb",
+                        "secondary-fixed-dim": "#7bd1fa",
+                        "surface-container-low": "#151b2d",
+                        "inverse-on-surface": "#2a3043",
+                        "on-primary-container": "#005763",
+                        "surface-tint": "#2fd9f4",
+                        "on-secondary-fixed": "#001e2b",
+                        "tertiary": "#68f5b8",
+                        "surface-container-high": "#23293c",
+                        "on-tertiary-fixed": "#002113",
+                        "surface-bright": "#33394c",
+                        "primary": "#8aebff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "primary-container": "#22d3ee",
+                        "outline-variant": "#3c494c",
+                        "on-surface-variant": "#bbc9cd",
+                        "secondary-container": "#00799e",
+                        "surface-variant": "#2e3447",
+                        "primary-fixed": "#a2eeff",
+                        "primary-fixed-dim": "#2fd9f4",
+                        "secondary": "#7bd1fa",
+                        "on-surface": "#dce1fb",
+                        "on-tertiary": "#003824",
+                        "on-primary-fixed": "#001f25"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "grid-overlay-size": "64px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "margin-desktop": "32px",
+                        "xl": "32px",
+                        "lg": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Geist"],
+                        "mono-data": ["JetBrains Mono"],
+                        "body-sm": ["Inter"],
+                        "mono-label": ["JetBrains Mono"],
+                        "headline-md": ["Geist"],
+                        "display-lg": ["Geist"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "mono-data": ["13px", { "lineHeight": "1.4", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "mono-label": ["12px", { "lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .tech-grid {
+            background-size: 64px 64px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+        .corner-brackets {
+            position: relative;
+        }
+        .corner-brackets::before, .corner-brackets::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-color: #3c494c; /* outline-variant */
+            border-style: solid;
+        }
+        .corner-brackets::before {
+            top: -1px; left: -1px;
+            border-width: 1px 0 0 1px;
+        }
+        .corner-brackets::after {
+            bottom: -1px; right: -1px;
+            border-width: 0 1px 1px 0;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface min-h-screen tech-grid antialiased flex flex-col font-body-md">
+<!-- TopAppBar -->
+<header class="bg-surface/80 backdrop-blur-xl fixed top-0 w-full z-50 border-b border-outline-variant/30 flex justify-between items-center px-margin-desktop h-16">
+<div class="flex items-center gap-sm hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer p-1 rounded"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQLxJChJsfi3_lTZVqgSxUL5zvOKtaZ7g_iUeIRpG8iux9Sg5MDR6IpZdPsE2rQFILSNDr6ZTs1VdYFs8Vyu-DKZf4u4vcgreRvG9VccJACVJt3m8w_H7oDw0MV8iSdJSzXsAosIS8AWA_DGlQ1KD5HoVIoDy4gWD4vw4S51CCE_hPbIedyJuKuNVV1V6Lh-7Koa5l1wGFJEmMMTA6088yj7ZaRDXZXOs2CcW8CbAjfTaZXZb5SZQw" alt="SatQuery AI Logo" class="h-8 w-auto object-contain"></div>
+<div class="flex items-center gap-xs">
+<span class="relative flex h-2 w-2 mr-1">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+<span class="font-mono-label text-mono-label text-primary">SYSTEM ONLINE</span>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 pt-20 pb-24 px-margin-mobile flex flex-col gap-md max-w-lg mx-auto w-full">
+<!-- Processing State Header -->
+<div class="flex items-center gap-sm text-primary mb-2">
+<span class="material-symbols-outlined animate-spin text-lg">settings</span>
+<h2 class="font-mono-label text-mono-label tracking-widest uppercase">SATQUERY AGENT: PROCESSING</h2>
+</div>
+<!-- Process List Container (Glassmorphic Bento) -->
+<div class="bg-surface-container/60 backdrop-blur-xl border border-outline-variant/50 rounded-lg p-md corner-brackets relative flex flex-col gap-sm">
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-tertiary-container" data-icon="check_circle">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Modality identified</span>
+</div>
+<div class="flex items-center gap-md">
+<span class="material-symbols-outlined text-tertiary-container" data-icon="check_circle">check_circle</span>
+<span class="font-body-md text-body-md text-on-surface">Task classified</span>
+</div>
+<div class="flex items-center gap-md opacity-70">
+<span class="material-symbols-outlined text-primary animate-spin" data-icon="sync">sync</span>
+<span class="font-body-md text-body-md text-primary">Analysis running...</span>
+</div>
+</div>
+<!-- Result Section (Revealed post-processing) -->
+<div class="bg-surface-container-low/80 backdrop-blur-lg border-[0.5px] border-primary/30 rounded-lg overflow-hidden flex flex-col shadow-[0_0_15px_rgba(34,211,238,0.1)] mt-sm corner-brackets relative">
+<!-- Result Header / Confidence -->
+<div class="bg-surface-container border-b border-outline-variant/30 px-md py-sm flex justify-between items-center">
+<span class="font-mono-label text-mono-label text-on-surface-variant flex items-center gap-xs">
+<span class="material-symbols-outlined text-[14px]">psychology</span> AI ANALYSIS
+                </span>
+<div class="flex items-center gap-xs bg-primary/10 px-2 py-1 rounded-DEFAULT border border-primary/20">
+<span class="material-symbols-outlined text-primary text-[12px]" data-icon="verified">verified</span>
+<span class="font-mono-label text-mono-label text-primary">94% HIGH CONFIDENCE</span>
+</div>
+</div>
+<!-- AI Answer -->
+<div class="p-md">
+<p class="font-body-lg text-body-lg text-on-surface leading-relaxed">
+                    Significant vegetation loss detected in the western quadrant due to urban expansion.
+                </p>
+</div>
+<!-- Visual Evidence (Map Thumbnail) -->
+<div class="px-md pb-md">
+<div class="relative w-full h-40 rounded-DEFAULT border border-outline-variant/30 overflow-hidden group">
+<div class="absolute inset-0 bg-cover bg-center w-full h-full" data-alt="A high-resolution satellite imagery map showing a distinct boundary between dense green forest and encroaching modern urban development. The scene is rendered in a deep, dark-mode geospatial aesthetic with stark contrasts. Thin, luminous cyan and emerald-green technical grid lines and boundary polygons overlay the image, highlighting specific zones of deforestation. The lighting mimics a sophisticated command center interface, precise and data-rich." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBzThZHtApFH6ZZzJz8ccCJXJLhbP-nPWMgFN9Q3fsxfG-n-2XElyL1idUEAo7L7T5IDQjOv2qXPYnu3MQuYVCLcMGvnsP8cbKuT0ltd_wG9kk3o2jQgon9iTGbR-oBh4c8hwOu6GCVluNr-xZfW_fKlcIvFsJglFP-MtRbO7d3TEgR5-_Q34X5ocl7pOpEv0vUl99zTd8w5hfn4u4WqH9TKWJiX8WRBJSWSXY-lqzihaGkdthv5KnB')"></div>
+<!-- Overlay UI on Map -->
+<div class="absolute top-2 left-2 bg-surface/80 backdrop-blur-md border border-outline-variant/50 px-2 py-1 rounded flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-error inline-block"></span>
+<span class="font-mono-data text-mono-data text-on-surface">CHANGE DETECTED</span>
+</div>
+<!-- Crosshair decorative -->
+<div class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none">
+<div class="w-full h-[1px] bg-primary"></div>
+<div class="w-[1px] h-full bg-primary absolute"></div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="px-md pb-md flex gap-sm pt-2">
+<button class="flex-1 bg-primary text-on-primary font-mono-label text-mono-label py-2 px-4 rounded-DEFAULT flex items-center justify-center gap-sm hover:bg-primary-fixed transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                    DOWNLOAD REPORT
+                </button>
+<button class="flex-1 border border-primary text-primary font-mono-label text-mono-label py-2 px-4 rounded-DEFAULT flex items-center justify-center gap-sm hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="share">share</span>
+                    SHARE ANALYSIS
+                </button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-surface-container-highest/90 backdrop-blur-lg fixed bottom-0 w-full z-50 md:hidden border-t border-outline-variant/30 shadow-lg flex justify-around items-center h-16 px-4">
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-mono-label text-[10px] mt-1">Explore</span>
+</div>
+<div class="flex flex-col items-center justify-center text-primary bg-primary/10 rounded-full p-2 scale-110 duration-150 cursor-pointer">
+<span class="material-symbols-outlined" data-icon="analytics" data-weight="fill" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-mono-label text-[10px] mt-1 font-bold">Analytics</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span class="font-mono-label text-[10px] mt-1">Hub</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary transition-colors cursor-pointer">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+<span class="font-mono-label text-[10px] mt-1">Profile</span>
+</div>
+</nav>
+
+
+</body></html>

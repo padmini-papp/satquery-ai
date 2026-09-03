@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Temporal Analysis - SATQUERY AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed": "#a2eeff",
+                      "on-secondary-fixed-variant": "#004d66",
+                      "outline-variant": "#3c494c",
+                      "on-tertiary": "#003824",
+                      "tertiary": "#68f5b8",
+                      "on-tertiary-fixed": "#002113",
+                      "on-secondary-fixed": "#001e2b",
+                      "error-container": "#93000a",
+                      "surface-bright": "#33394c",
+                      "on-surface-variant": "#bbc9cd",
+                      "on-primary-fixed": "#001f25",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-high": "#23293c",
+                      "secondary-fixed-dim": "#7bd1fa",
+                      "primary-fixed-dim": "#2fd9f4",
+                      "secondary-fixed": "#c0e8ff",
+                      "outline": "#859397",
+                      "primary": "#8aebff",
+                      "on-background": "#dce1fb",
+                      "on-surface": "#dce1fb",
+                      "on-primary-container": "#005763",
+                      "tertiary-fixed-dim": "#4edea3",
+                      "tertiary-fixed": "#6ffbbe",
+                      "surface-container-lowest": "#070d1f",
+                      "on-primary-fixed-variant": "#004e5a",
+                      "secondary": "#7bd1fa",
+                      "on-error": "#690005",
+                      "surface-container": "#191f31",
+                      "error": "#ffb4ab",
+                      "inverse-on-surface": "#2a3043",
+                      "tertiary-container": "#46d89d",
+                      "surface": "#0c1324",
+                      "on-tertiary-container": "#005a3d",
+                      "on-secondary-container": "#e9f6ff",
+                      "on-primary": "#00363e",
+                      "inverse-primary": "#006877",
+                      "surface-tint": "#2fd9f4",
+                      "on-secondary": "#003547",
+                      "surface-container-highest": "#2e3447",
+                      "surface-container-low": "#151b2d",
+                      "secondary-container": "#00799e",
+                      "surface-dim": "#0c1324",
+                      "primary-container": "#22d3ee",
+                      "on-tertiary-fixed-variant": "#005236",
+                      "background": "#0c1324",
+                      "surface-variant": "#2e3447",
+                      "inverse-surface": "#dce1fb"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "xl": "32px",
+                      "grid-overlay-size": "64px",
+                      "sm": "8px",
+                      "margin-desktop": "32px",
+                      "unit": "4px",
+                      "md": "16px",
+                      "margin-mobile": "16px",
+                      "gutter": "16px",
+                      "xs": "4px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Geist"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Geist"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "mono-label": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-lg": [
+                              "Geist"
+                      ],
+                      "display-lg": [
+                              "Geist"
+                      ],
+                      "mono-data": [
+                              "JetBrains Mono"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "28px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "mono-label": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "mono-data": [
+                              "13px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        /* Base Grid Overlay */
+        .bg-grid-overlay {
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 64px 64px;
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background-color: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 0.5px solid #1e293b;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070d1f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3c494c;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #859397;
+        }
+
+        /* Image Slider styles */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        .slider-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .slider-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            border-right: 2px solid #22d3ee;
+        }
+        .slider-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 4px;
+            background-color: #22d3ee;
+            cursor: ew-resize;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .slider-handle-icon {
+            width: 32px;
+            height: 32px;
+            background-color: #22d3ee;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #001f25;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.5);
+        }
+        
+        .corner-bracket-tl {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 16px;
+            height: 16px;
+            border-top: 2px solid #22d3ee;
+            border-left: 2px solid #22d3ee;
+        }
+        .corner-bracket-tr {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 16px;
+            height: 16px;
+            border-top: 2px solid #22d3ee;
+            border-right: 2px solid #22d3ee;
+        }
+        .corner-bracket-bl {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 16px;
+            height: 16px;
+            border-bottom: 2px solid #22d3ee;
+            border-left: 2px solid #22d3ee;
+        }
+        .corner-bracket-br {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 16px;
+            height: 16px;
+            border-bottom: 2px solid #22d3ee;
+            border-right: 2px solid #22d3ee;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md h-screen w-screen overflow-hidden flex flex-col bg-grid-overlay">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30 flat no shadows flex justify-between items-center px-margin-desktop h-16">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-[24px]" data-icon="satellite_alt">satellite_alt</span>
+<span class="font-headline-md text-headline-md font-bold tracking-tighter text-primary">SATQUERY AI</span>
+</div>
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-sm px-3 py-1 rounded bg-primary/10 text-primary border border-primary/20">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-mono-label text-mono-label">SYSTEM ONLINE</span>
+</div>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-bright/50 transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-bright border border-outline flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A small circular avatar portrait of an aerospace analyst in a dark technical setting, dramatic cyan rim lighting, serious expression, highly detailed face, realistic photographic style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiUo7Oz2Q5vol4XL1d9wHrDJLekydZXEoLvDKv-0W2tq9_mDgefgEAlUBlejH2LVsfK6UMzEWfMqzOni_7aqO2Nm0GaZpTeoesZ1Cz1BBMUi5uvZYpxwhFNjWJxsl0Kba7LqoszvxwMCbObK6-apYmjO4QnBKxARqamngXVU7wdfV-OErDl-f_kQB3Juvrc7jaQIOh8wU3GXP60dAqryl9xxvsH68p2QtxTUJpyEssK9_bl7CoH5nK"/>
+</div>
+</div>
+</header>
+<div class="flex flex-1 pt-16 h-full">
+<!-- NavigationDrawer -->
+<nav class="hidden md:flex flex-col py-xl bg-surface-container-low/95 backdrop-blur-2xl border-r border-outline-variant/20 shadow-xl fixed left-0 top-16 h-[calc(100vh-64px)] w-[320px] z-[40]">
+<div class="px-lg pb-md mb-md border-b border-outline-variant/20">
+<h2 class="font-headline-md text-headline-md text-primary tracking-wide">MISSION CONTROL</h2>
+</div>
+<ul class="flex-1 overflow-y-auto space-y-1">
+<li>
+<a class="text-on-surface-variant px-lg py-md flex items-center gap-md hover:bg-surface-bright/50 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Workspace</span>
+</a>
+</li>
+<li>
+<a class="bg-primary-container/20 text-primary border-r-2 border-primary px-lg py-md flex items-center gap-md hover:bg-surface-bright/50 transition-all translate-x-1 duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="layers">layers</span>
+<span class="font-body-md text-body-md font-medium">Temporal Analysis</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant px-lg py-md flex items-center gap-md hover:bg-surface-bright/50 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-body-md text-body-md">Processing History</span>
+</a>
+</li>
+<li>
+<a class="text-on-surface-variant px-lg py-md flex items-center gap-md hover:bg-surface-bright/50 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+<span class="font-body-md text-body-md">System Settings</span>
+</a>
+</li>
+</ul>
+<div class="p-lg mt-auto border-t border-outline-variant/20">
+<div class="glass-panel p-md rounded-lg flex flex-col gap-2">
+<span class="font-mono-label text-mono-label text-on-surface-variant">NODE STATUS</span>
+<div class="flex justify-between items-center">
+<span class="font-mono-data text-mono-data text-primary">US-EAST-1</span>
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 md:ml-[320px] p-lg md:p-xl flex gap-lg h-full overflow-hidden relative">
+<!-- Left: Slider Container -->
+<div class="flex-1 glass-panel rounded-xl border border-outline-variant/30 relative flex flex-col overflow-hidden">
+<!-- Corner Brackets -->
+<div class="corner-bracket-tl"></div>
+<div class="corner-bracket-tr"></div>
+<div class="corner-bracket-bl"></div>
+<div class="corner-bracket-br"></div>
+<!-- Toolbar -->
+<div class="h-12 border-b border-outline-variant/30 flex items-center justify-between px-md bg-surface-container/50">
+<div class="flex gap-md font-mono-label text-mono-label">
+<div class="flex items-center gap-sm">
+<span class="w-2 h-2 bg-secondary rounded-full"></span>
+<span class="text-secondary">T1: 2023-08-15</span>
+</div>
+<span class="text-outline-variant">|</span>
+<div class="flex items-center gap-sm">
+<span class="w-2 h-2 bg-tertiary rounded-full"></span>
+<span class="text-tertiary">T2: 2023-11-22</span>
+</div>
+</div>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded border border-outline-variant/50 flex items-center justify-center hover:bg-surface-bright/50 text-on-surface-variant transition-colors" title="Zoom In">
+<span class="material-symbols-outlined text-[18px]" data-icon="zoom_in">zoom_in</span>
+</button>
+<button class="w-8 h-8 rounded border border-outline-variant/50 flex items-center justify-center hover:bg-surface-bright/50 text-on-surface-variant transition-colors" title="Zoom Out">
+<span class="material-symbols-outlined text-[18px]" data-icon="zoom_out">zoom_out</span>
+</button>
+<button class="w-8 h-8 rounded border border-outline-variant/50 flex items-center justify-center hover:bg-surface-bright/50 text-on-surface-variant transition-colors" title="Reset View">
+<span class="material-symbols-outlined text-[18px]" data-icon="my_location">my_location</span>
+</button>
+</div>
+</div>
+<!-- Slider Viewport -->
+<div class="flex-1 relative slider-container group cursor-crosshair bg-black" id="comparison-slider">
+<!-- Base Image (After / T2) -->
+<img class="slider-image" data-alt="High resolution satellite imagery of a coastal industrial port facility in dark technical mode, showing new construction and increased container volume. Crisp details, orthographic top-down view, muted realistic colors optimized for analysis." draggable="false" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBam899_F_-DbzYsc1DKF2cPE3DTxNlT8PJS90Z8mYfBTPXEkTKieC6k6q0raZwI4Wxgi8MvmpSsi1aWdbHzloFynna501K69ElH6DjTCPRXV2819BU7Ttk6jZ8aYueMR_TaPqXq8RFn3XgiVIPixK8rqsS-21kr91qD3sJgBx2dkDFZY6lQ7w9Xazf0_UYcoloardcsJsUijGZBDNHXZH749l4A7AdGPkfd0vfwKvDUjzFX2t9Z6pb"/>
+<!-- Overlay Image (Before / T1) -->
+<div class="slider-overlay" id="slider-overlay">
+<img class="slider-image" data-alt="High resolution satellite imagery of a coastal industrial port facility in dark technical mode, showing empty construction sites and fewer shipping containers. Crisp details, orthographic top-down view, muted realistic colors optimized for analysis." draggable="false" id="slider-overlay-img" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbepdI6vbnOhwJzvRdA8TdYnYECcJI8MdumOT798S_ZOBZ7z3BslBhAViakCwwmyabsQHAyCOBAgdSOQsAB7SWjJj50DH21L7yjc0PlEF0w0yH43ocxSHH7MScP8VP3hKfO8cQuMpkhwNZXo3LSL1AEigouCQo8WV93iCVujU5Yn5FHQK6zjb-kpMbp7n3MHl-26Rj0IayWe98NvHo-EEuzcYNbA-AaFpSGTIPLJR8Bd3MuOymMGhx"/>
+</div>
+<!-- Slider Handle -->
+<div class="slider-handle" id="slider-handle">
+<div class="slider-handle-icon">
+<span class="material-symbols-outlined text-[16px] font-bold" data-icon="code">code</span>
+</div>
+</div>
+<!-- On-image Analysis Highlights (simulated) -->
+<div class="absolute top-[30%] left-[60%] w-16 h-16 border border-tertiary bg-tertiary/10 rounded pointer-events-none">
+<div class="absolute -top-5 left-0 bg-tertiary/20 px-1 py-0.5 text-[10px] font-mono-label text-tertiary whitespace-nowrap">NEW STRUCTURE</div>
+</div>
+<!-- Coordinates HUD -->
+<div class="absolute bottom-md right-md bg-surface-container/80 backdrop-blur px-sm py-xs rounded border border-outline-variant/50 font-mono-data text-mono-data text-on-surface-variant pointer-events-none">
+                        34° 03' 08" N | 118° 14' 37" W
+                    </div>
+</div>
+</div>
+<!-- Right: Analysis Panel -->
+<div class="w-[380px] flex flex-col gap-md h-full overflow-y-auto pr-sm pb-16 md:pb-0">
+<!-- Action Header -->
+<div class="flex justify-between items-end mb-sm">
+<div>
+<h3 class="font-headline-md text-headline-md font-semibold text-on-surface">Port Expansion Sector 7</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Change Detection Analysis</p>
+</div>
+<button class="bg-primary hover:bg-primary-fixed-dim text-on-primary-fixed font-mono-label text-mono-label px-md py-sm rounded transition-colors flex items-center gap-xs shadow-[0_0_15px_rgba(34,211,238,0.2)]">
+<span class="material-symbols-outlined text-[18px]" data-icon="download">download</span>
+                        EXPORT REPORT
+                    </button>
+</div>
+<!-- Analysis Summary Card -->
+<div class="glass-panel p-md rounded-lg border border-outline-variant/30 flex flex-col gap-md">
+<div class="flex items-center gap-sm border-b border-outline-variant/30 pb-sm">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="analytics">analytics</span>
+<h4 class="font-mono-label text-mono-label text-primary tracking-widest">SUMMARY STATISTICS</h4>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-surface-container/50 p-sm rounded border border-outline-variant/20 flex flex-col">
+<span class="font-mono-label text-[10px] text-on-surface-variant">TOTAL AREA CHANGED</span>
+<span class="font-mono-data text-body-lg text-on-surface mt-1">14.2 ha</span>
+</div>
+<div class="bg-surface-container/50 p-sm rounded border border-outline-variant/20 flex flex-col">
+<span class="font-mono-label text-[10px] text-on-surface-variant">CONFIDENCE SCORE</span>
+<span class="font-mono-data text-body-lg text-tertiary mt-1">94.8%</span>
+</div>
+<div class="bg-surface-container/50 p-sm rounded border border-outline-variant/20 flex flex-col col-span-2">
+<span class="font-mono-label text-[10px] text-on-surface-variant">PRIMARY DRIVER</span>
+<span class="font-body-sm text-on-surface mt-1">Industrial infrastructure construction and increased container stockpiling.</span>
+</div>
+</div>
+</div>
+<!-- Detailed Legend / Detection Types -->
+<div class="glass-panel p-md rounded-lg border border-outline-variant/30 flex flex-col gap-md flex-1">
+<div class="flex items-center gap-sm border-b border-outline-variant/30 pb-sm">
+<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="format_list_bulleted">format_list_bulleted</span>
+<h4 class="font-mono-label text-mono-label text-secondary tracking-widest">DETECTION CLASSES</h4>
+</div>
+<div class="flex flex-col gap-sm overflow-y-auto">
+<!-- Class 1 -->
+<div class="flex items-center justify-between p-sm hover:bg-surface-bright/30 rounded transition-colors border border-transparent hover:border-outline-variant/20">
+<div class="flex items-center gap-md">
+<div class="w-3 h-3 bg-tertiary rounded-sm shadow-[0_0_8px_rgba(104,245,184,0.5)]"></div>
+<span class="font-body-sm text-on-surface">New Structures</span>
+</div>
+<span class="font-mono-data text-mono-data text-on-surface-variant">+8 units</span>
+</div>
+<!-- Class 2 -->
+<div class="flex items-center justify-between p-sm hover:bg-surface-bright/30 rounded transition-colors border border-transparent hover:border-outline-variant/20">
+<div class="flex items-center gap-md">
+<div class="w-3 h-3 bg-primary rounded-sm shadow-[0_0_8px_rgba(138,235,255,0.5)]"></div>
+<span class="font-body-sm text-on-surface">Container Volume</span>
+</div>
+<span class="font-mono-data text-mono-data text-on-surface-variant">+24.5%</span>
+</div>
+<!-- Class 3 -->
+<div class="flex items-center justify-between p-sm hover:bg-surface-bright/30 rounded transition-colors border border-transparent hover:border-outline-variant/20">
+<div class="flex items-center gap-md">
+<div class="w-3 h-3 bg-error rounded-sm opacity-80"></div>
+<span class="font-body-sm text-on-surface">Vegetation Loss</span>
+</div>
+<span class="font-mono-data text-mono-data text-on-surface-variant">-3.1 ha</span>
+</div>
+<!-- Class 4 -->
+<div class="flex items-center justify-between p-sm hover:bg-surface-bright/30 rounded transition-colors border border-transparent hover:border-outline-variant/20">
+<div class="flex items-center gap-md">
+<div class="w-3 h-3 bg-secondary rounded-sm opacity-80"></div>
+<span class="font-body-sm text-on-surface">Waterway Alteration</span>
+</div>
+<span class="font-mono-data text-mono-data text-on-surface-variant">Minimal</span>
+</div>
+</div>
+<div class="mt-auto pt-sm border-t border-outline-variant/30">
+<button class="w-full py-2 border border-primary/50 text-primary font-mono-label text-mono-label rounded hover:bg-primary/10 transition-colors flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="tune">tune</span>
+                            ADJUST THRESHOLDS
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+        // Simple comparison slider logic
+        const sliderContainer = document.getElementById('comparison-slider');
+        const overlay = document.getElementById('slider-overlay');
+        const handle = document.getElementById('slider-handle');
+        const overlayImg = document.getElementById('slider-overlay-img');
+
+        let isDragging = false;
+
+        // Ensure overlay image stays full width of container even when container is clipped
+        const updateOverlayImageSize = () => {
+            if(overlayImg && sliderContainer) {
+                overlayImg.style.width = `${sliderContainer.offsetWidth}px`;
+            }
+        };
+
+        window.addEventListener('resize', updateOverlayImageSize);
+        // Initial call
+        setTimeout(updateOverlayImageSize, 100); // slight delay to ensure layout
+
+        const moveSlider = (clientX) => {
+            if (!sliderContainer) return;
+            const rect = sliderContainer.getBoundingClientRect();
+            let x = clientX - rect.left;
+            
+            // Constrain
+            if (x < 0) x = 0;
+            if (x > rect.width) x = rect.width;
+            
+            const percent = (x / rect.width) * 100;
+            
+            overlay.style.width = `${percent}%`;
+            handle.style.left = `${percent}%`;
+        };
+
+        sliderContainer.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            moveSlider(e.clientX);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            moveSlider(e.clientX);
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+        
+        // Touch support
+        sliderContainer.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            moveSlider(e.touches[0].clientX);
+        });
+        
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            moveSlider(e.touches[0].clientX);
+        });
+        
+        window.addEventListener('touchend', () => {
+            isDragging = false;
+        });
+
+    </script>
+</body></html>

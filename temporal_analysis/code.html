@@ -1,0 +1,303 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Temporal Analysis - Change Detection</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#46d89d",
+                        "surface-dim": "#0c1324",
+                        "on-secondary-container": "#e9f6ff",
+                        "inverse-primary": "#006877",
+                        "surface-container-highest": "#2e3447",
+                        "error-container": "#93000a",
+                        "surface-container-lowest": "#070d1f",
+                        "surface": "#0c1324",
+                        "error": "#ffb4ab",
+                        "on-tertiary-container": "#005a3d",
+                        "outline": "#859397",
+                        "background": "#0c1324",
+                        "inverse-surface": "#dce1fb",
+                        "secondary-fixed": "#c0e8ff",
+                        "tertiary-fixed": "#6ffbbe",
+                        "on-tertiary-fixed-variant": "#005236",
+                        "on-primary": "#00363e",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary": "#003547",
+                        "on-primary-fixed-variant": "#004e5a",
+                        "on-secondary-fixed-variant": "#004d66",
+                        "surface-container": "#191f31",
+                        "on-error": "#690005",
+                        "on-background": "#dce1fb",
+                        "secondary-fixed-dim": "#7bd1fa",
+                        "surface-container-low": "#151b2d",
+                        "inverse-on-surface": "#2a3043",
+                        "on-primary-container": "#005763",
+                        "surface-tint": "#2fd9f4",
+                        "on-secondary-fixed": "#001e2b",
+                        "tertiary": "#68f5b8",
+                        "surface-container-high": "#23293c",
+                        "on-tertiary-fixed": "#002113",
+                        "surface-bright": "#33394c",
+                        "primary": "#8aebff",
+                        "tertiary-fixed-dim": "#4edea3",
+                        "primary-container": "#22d3ee",
+                        "outline-variant": "#3c494c",
+                        "on-surface-variant": "#bbc9cd",
+                        "secondary-container": "#00799e",
+                        "surface-variant": "#2e3447",
+                        "primary-fixed": "#a2eeff",
+                        "primary-fixed-dim": "#2fd9f4",
+                        "secondary": "#7bd1fa",
+                        "on-surface": "#dce1fb",
+                        "on-tertiary": "#003824",
+                        "on-primary-fixed": "#001f25"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "grid-overlay-size": "64px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "gutter": "16px",
+                        "margin-desktop": "32px",
+                        "xl": "32px",
+                        "lg": "24px",
+                        "sm": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "headline-lg": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Geist"],
+                        "mono-data": ["JetBrains Mono"],
+                        "body-sm": ["Inter"],
+                        "mono-label": ["JetBrains Mono"],
+                        "headline-md": ["Geist"],
+                        "display-lg": ["Geist"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "headline-lg": ["32px", { "lineHeight": "1.2", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["28px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "mono-data": ["13px", { "lineHeight": "1.4", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "mono-label": ["12px", { "lineHeight": "1.4", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Geist:wght@500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+        .glass-panel {
+            background-color: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(60, 73, 76, 0.3);
+        }
+        .tech-bracket-tl {
+            position: relative;
+        }
+        .tech-bracket-tl::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 8px;
+            height: 1px;
+            background-color: #3c494c;
+        }
+        .tech-bracket-tl::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1px;
+            height: 8px;
+            background-color: #3c494c;
+        }
+        .grid-bg {
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+            background-size: 64px 64px;
+        }
+        .slider-handle {
+            transform: translateX(-50%);
+        }
+        .text-cyan-glow {
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background antialiased font-body-md overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Grid Overlay -->
+<div class="fixed inset-0 grid-bg pointer-events-none z-0"></div>
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl border-b border-outline-variant/30">
+<div class="flex justify-between items-center px-margin-desktop md:px-margin-desktop px-margin-mobile h-16 w-full">
+<div class="flex items-center gap-md"><img src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQLxJChJsfi3_lTZVqgSxUL5zvOKtaZ7g_iUeIRpG8iux9Sg5MDR6IpZdPsE2rQFILSNDr6ZTs1VdYFs8Vyu-DKZf4u4vcgreRvG9VccJACVJt3m8w_H7oDw0MV8iSdJSzXsAosIS8AWA_DGlQ1KD5HoVIoDy4gWD4vw4S51CCE_hPbIedyJuKuNVV1V6Lh-7Koa5l1wGFJEmMMTA6088yj7ZaRDXZXOs2CcW8CbAjfTaZXZb5SZQw" alt="SatQuery AI Classy Logo" class="h-8 w-auto object-contain"></div>
+<div class="flex items-center">
+<span class="font-mono-label text-mono-label text-on-surface-variant px-sm py-xs border border-outline-variant rounded">SYSTEM ONLINE</span>
+</div>
+</div>
+</header>
+<!-- Main Content -->
+<main class="relative z-10 pt-20 pb-24 px-margin-mobile min-h-screen flex flex-col gap-md">
+<!-- Header Section -->
+<div class="flex flex-col gap-xs mb-sm">
+<h1 class="font-headline-lg-mobile text-headline-lg-mobile text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary-container">layers</span>
+                Temporal Analysis
+            </h1>
+<p class="font-mono-data text-mono-data text-on-surface-variant uppercase tracking-wider">Change Detection Protocol Active</p>
+</div>
+<!-- Satellite Imagery Comparison Container -->
+<div class="relative w-full rounded overflow-hidden border border-outline-variant/50 shadow-[0_0_15px_rgba(34,211,238,0.1)] h-[397px] min-h-[350px]">
+<!-- BEFORE Image -->
+<div class="absolute inset-0 w-full h-full" data-alt="High-resolution, top-down satellite imagery of a coastal industrial zone taken in 2022. The scene shows clear topography, a few scattered warehouses, and undeveloped dirt lots. The color palette is natural but slightly muted, characteristic of technical geospatial data. The lighting is harsh midday sun, casting distinct shadows. The overall aesthetic is precise, data-rich, and suitable for technical analysis." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCsDN76y9w9e2ZL2ca1cK1CcN2RHuZSx6O7pfSqv8CyhCoD8r8T9MW6baweMzRbU0sLZheSXNCenTqUgdhLULVwMu9jU91DALkaACB-1qO2_s-zFIq4JGAvvB-RBQvwLSLe170hNEiT80ENd3dphc55dbKt4puzZ3A-UVz3-JJu4ZmngnnbozAjfHj_7afL4c6_CGYEz-0QmHFnmLv-kjz_gZ0D4ES-TRHzpC5_euo5mgVPMJbeZ6En')">
+<div class="absolute top-sm left-sm glass-panel px-sm py-xs rounded flex items-center gap-xs z-20">
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+<span class="font-mono-label text-mono-label text-on-surface">BEFORE (2022-05-10)</span>
+</div>
+</div>
+<!-- AFTER Image (Clipped by slider) -->
+<div class="absolute inset-0 w-full h-full overflow-hidden" style="clip-path: inset(0 0 0 50%);">
+<div class="absolute inset-0 w-full h-full" data-alt="High-resolution, top-down satellite imagery of the identical coastal industrial zone taken in 2024. The scene reveals significant new construction, with several large warehouse structures and paved logistics yards replacing the dirt lots. Cyan and red artificial intelligence overlays explicitly highlight the newly constructed building footprints and changed land use areas. The aesthetic matches the previous image but with bright, technical AI highlights superimposed." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBPAvQwuvIQWCZj7Vf2qjfbnCb0Ch5WrkbAn0HjdIebQrcd_pVOZrbBzzct0KWOzT29fW9qTEBfE5vRy7V3v_rAEKldtxC_-Gx0Qi_uKN_LZK2uqDwn23Mt8c3KK5YmAN8gtFQtT_fCUn2aTLOaBQ2VeqiPyeERmcfvWmDymGPo32ROjCLJ4whVK5bjaE8x6aG2oajiA0NY3CaAJyGUqJulTAVOZjwBmuTby6NSHV_NnBSGByzDlGt8')">
+<div class="absolute top-sm right-sm glass-panel px-sm py-xs rounded flex items-center gap-xs z-20">
+<span class="font-mono-label text-mono-label text-on-surface">AFTER (2024-05-12)</span>
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+</div>
+</div>
+</div>
+<!-- Slider Handle -->
+<div class="absolute inset-y-0 left-1/2 w-0.5 bg-primary-container shadow-[0_0_8px_rgba(34,211,238,0.8)] slider-handle cursor-ew-resize z-30 flex flex-col justify-center items-center">
+<div class="w-8 h-8 rounded-full bg-surface-container-high border-2 border-primary-container flex items-center justify-center shadow-lg">
+<span class="material-symbols-outlined text-primary-container text-[16px]">swap_horiz</span>
+</div>
+</div>
+<!-- Corner Brackets -->
+<div class="absolute top-0 left-0 w-4 h-4 tech-bracket-tl z-20"></div>
+<div class="absolute top-0 right-0 w-4 h-4 rotate-90 tech-bracket-tl z-20"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 rotate-180 tech-bracket-tl z-20"></div>
+<div class="absolute bottom-0 left-0 w-4 h-4 -rotate-90 tech-bracket-tl z-20"></div>
+</div>
+<!-- Analysis Data Cards -->
+<div class="grid grid-cols-1 gap-md">
+<!-- Summary Card -->
+<div class="glass-panel p-md rounded flex flex-col gap-sm tech-bracket-tl">
+<div class="flex items-center gap-sm text-primary-container mb-xs">
+<span class="material-symbols-outlined" data-weight="fill">analytics</span>
+<h2 class="font-mono-label text-mono-label uppercase tracking-widest">Analysis Summary</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface">
+                    Detected <span class="text-primary-container font-mono-data text-cyan-glow">12</span> new structures and <span class="text-error font-mono-data">15%</span> increase in built-up area.
+                </p>
+<div class="h-1 w-full bg-surface-container-low mt-sm rounded overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary-container to-error w-[15%]"></div>
+</div>
+</div>
+<!-- Legend Card -->
+<div class="glass-panel p-md rounded flex flex-col gap-sm tech-bracket-tl">
+<h2 class="font-mono-label text-mono-label text-on-surface-variant uppercase tracking-widest mb-xs">Legend</h2>
+<div class="flex flex-col gap-sm">
+<div class="flex items-center gap-md">
+<div class="w-6 h-6 rounded border border-error/50 bg-error/20 flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-error"></div>
+</div>
+<span class="font-mono-data text-mono-data text-on-surface">Significant Change</span>
+</div>
+<div class="flex items-center gap-md">
+<div class="w-6 h-6 rounded border border-primary/50 bg-primary/10 flex items-center justify-center">
+<div class="w-2 h-2 rounded-full bg-primary/50"></div>
+</div>
+<span class="font-mono-data text-mono-data text-on-surface">Stable Region</span>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full py-md px-lg bg-primary-container/10 hover:bg-primary-container/20 border border-primary-container rounded font-mono-label text-mono-label text-primary-container transition-colors flex items-center justify-center gap-sm mt-sm">
+<span class="material-symbols-outlined">download</span>
+                EXPORT REPORT
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile only) -->
+<nav class="fixed bottom-0 w-full z-50 md:hidden bg-surface-container-highest/90 backdrop-blur-lg border-t border-outline-variant/30 shadow-lg flex justify-around items-center h-16 px-4">
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary" href="#">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+<span class="font-mono-label text-mono-label text-[10px] mt-1">Explore</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary bg-primary/10 rounded-full p-2 scale-110 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="layers">layers</span>
+<span class="font-mono-label text-mono-label text-[10px] mt-1 text-primary-container">Temporal</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-mono-label text-mono-label text-[10px] mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant p-2 hover:text-primary" href="#">
+<span class="material-symbols-outlined" data-icon="settings_suggest">settings_suggest</span>
+<span class="font-mono-label text-mono-label text-[10px] mt-1">Settings</span>
+</a>
+</nav>
+<script>
+        // Simple slider interaction mockup
+        const sliderContainer = document.querySelector('.relative.h-\\[45vh\\]');
+        const afterImage = document.querySelector('.overflow-hidden[style*="clip-path"]');
+        const sliderHandle = document.querySelector('.slider-handle');
+
+        let isDragging = false;
+
+        const updateSlider = (xPosition) => {
+            const rect = sliderContainer.getBoundingClientRect();
+            let percentage = ((xPosition - rect.left) / rect.width) * 100;
+            
+            // Constrain
+            percentage = Math.max(0, Math.min(100, percentage));
+            
+            afterImage.style.clipPath = `inset(0 0 0 ${percentage}%)`;
+            sliderHandle.style.left = `${percentage}%`;
+        };
+
+        if(sliderContainer && afterImage && sliderHandle) {
+            sliderHandle.addEventListener('mousedown', () => isDragging = true);
+            sliderHandle.addEventListener('touchstart', () => isDragging = true, {passive: true});
+            
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('touchend', () => isDragging = false);
+            
+            window.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                updateSlider(e.clientX);
+            });
+            
+            window.addEventListener('touchmove', (e) => {
+                if (!isDragging) return;
+                updateSlider(e.touches[0].clientX);
+            }, {passive: true});
+        }
+    </script>
+
+
+</body></html>
