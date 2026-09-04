@@ -12,19 +12,30 @@ export const LandingScreen: React.FC = () => {
     selectedParameters,
     toggleParameter,
     startAnalysisFlow,
+    setCurrentImage,
   } = useApp();
 
   const [queryInput, setQueryInput] = useState<string>('Analyze vessel patterns in sector 7G. Any deviations from standard maritime routes?');
   const [isDragging, setIsDragging] = useState<boolean>(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const parameterList: DetectionParameter[] = ['VESSELS', 'AIRCRAFT', 'INFRASTRUCTURE', 'VEHICLES'];
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      addUploadedFile(file.name, file);
+      setCurrentImage(URL.createObjectURL(file));
+    }
+  };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0];
-      addUploadedFile(file.name);
+      addUploadedFile(file.name, file);
+      setCurrentImage(URL.createObjectURL(file));
     } else {
       addUploadedFile('optical_sar_pair_t1_t2.tif');
     }
@@ -150,11 +161,18 @@ export const LandingScreen: React.FC = () => {
               <label className="font-mono-label text-mono-label text-primary block mb-1.5 tracking-wider">
                 REFERENCE IMAGERY UPLOAD
               </label>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".tif,.tiff,.png,.jpg,.jpeg"
+                onChange={handleFileChange}
+                className="hidden"
+              />
               <div
                 onDrop={handleDrop}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
-                onClick={() => addUploadedFile(`sector7g_sar_${Date.now().toString().slice(-4)}.tif`)}
+                onClick={() => fileInputRef.current?.click()}
                 className={`border border-dashed rounded flex flex-col items-center justify-center p-md sm:p-lg cursor-pointer transition-all group ${
                   isDragging
                     ? 'border-primary bg-primary/10 scale-[0.99]'

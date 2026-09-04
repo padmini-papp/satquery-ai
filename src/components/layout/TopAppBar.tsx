@@ -3,7 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { ScreenType } from '../../types';
 
 export const TopAppBar: React.FC = () => {
-  const { currentScreen, setCurrentScreen, theme, toggleTheme } = useApp();
+  const { currentScreen, setCurrentScreen, theme, toggleTheme, backendConnected } = useApp();
+
 
   const navItems: { label: string; screen: ScreenType }[] = [
     { label: 'Workspace', screen: 'console' },
@@ -83,7 +84,7 @@ export const TopAppBar: React.FC = () => {
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </span>
           <span className="font-mono-label text-mono-label text-primary tracking-wider">
-            SYSTEM ONLINE
+            {backendConnected ? 'BACKEND ONLINE' : 'SYSTEM ONLINE'}
           </span>
         </div>
       </div>

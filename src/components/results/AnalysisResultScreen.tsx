@@ -127,11 +127,33 @@ export const AnalysisResultScreen: React.FC = () => {
             </div>
 
             {/* Change Detected Bounding Highlight */}
-            <div className="absolute top-[32%] left-[42%] border-2 border-error bg-error/10 p-2 pointer-events-none shadow-[0_0_16px_rgba(255,180,171,0.3)]">
-              <div className="font-mono-label text-[10px] text-on-error bg-error/90 px-1.5 py-0.5 rounded -top-4 left-0 absolute whitespace-nowrap">
-                CHANGE DETECTED // NEW STRUCTURE
+            {session.evidenceItems && session.evidenceItems.length > 0 ? (
+              session.evidenceItems.map((item, idx) => {
+                const [y1, x1, y2, x2] = item.bbox && item.bbox.length === 4 ? item.bbox : [200, 220, 380, 410];
+                return (
+                  <div
+                    key={idx}
+                    className="absolute border-2 border-tertiary bg-tertiary/10 p-1 pointer-events-none shadow-[0_0_16px_rgba(104,245,184,0.3)] transition-all"
+                    style={{
+                      top: `${Math.min(Math.max((y1 / 600) * 100, 10), 75)}%`,
+                      left: `${Math.min(Math.max((x1 / 800) * 100, 10), 75)}%`,
+                      width: `${Math.max(((x2 - x1) / 800) * 100, 15)}%`,
+                      height: `${Math.max(((y2 - y1) / 600) * 100, 15)}%`,
+                    }}
+                  >
+                    <div className="font-mono-label text-[9px] text-black bg-tertiary px-1.5 py-0.5 rounded -top-4 left-0 absolute whitespace-nowrap font-bold">
+                      {item.claim || `EVIDENCE #${idx + 1}`} ({(item.confidence * 100).toFixed(0)}%)
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="absolute top-[32%] left-[42%] border-2 border-error bg-error/10 p-2 pointer-events-none shadow-[0_0_16px_rgba(255,180,171,0.3)]">
+                <div className="font-mono-label text-[10px] text-on-error bg-error/90 px-1.5 py-0.5 rounded -top-4 left-0 absolute whitespace-nowrap">
+                  CHANGE DETECTED // NEW STRUCTURE
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Bottom Coordinate Readout */}
             <div className="absolute bottom-3 left-3 bg-surface/85 backdrop-blur-md px-3 py-1 rounded border border-outline-variant/40 font-mono-data text-xs text-secondary pointer-events-none">
@@ -166,6 +188,27 @@ export const AnalysisResultScreen: React.FC = () => {
               </span>
             </div>
           </div>
+
+          {/* Optional Execution Summary Metrics */}
+          {session.executionSummary && (
+            <div className="glass-panel rounded-xl p-4 tech-border shadow-xl space-y-2 font-mono-data text-xs">
+              <div className="font-mono-label text-xs text-primary uppercase tracking-wider font-bold">
+                NEURAL EXECUTION METRICS
+              </div>
+              <div className="flex justify-between py-1 border-b border-outline-variant/10">
+                <span className="text-on-surface-variant">LATENCY</span>
+                <span className="text-tertiary font-bold">
+                  {session.executionSummary.processing_time_ms.toFixed(0)} ms
+                </span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-on-surface-variant">MODELS USED</span>
+                <span className="text-primary font-bold">
+                  {(session.executionSummary.models || []).join(', ')}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Column: AI Confidence, Executive Summary, Verification (4 cols) */}
