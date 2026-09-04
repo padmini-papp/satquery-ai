@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { STITCH_IMAGES } from '../../services/mockAnalysisService';
 import { DetectionParameter } from '../../types';
 
 export const AnalysisConsole: React.FC = () => {
@@ -16,58 +15,18 @@ export const AnalysisConsole: React.FC = () => {
     currentImage,
     setCurrentImage,
     addUploadedFile,
+    uploadedFiles,
     session,
+    availableModels,
+    selectedModel,
+    setSelectedModel,
+    backendConnected,
   } = useApp();
 
   const [inputQuery, setInputQuery] = useState('');
   const [zoomLevel, setZoomLevel] = useState(1);
-  const [activePreset, setActivePreset] = useState<'hormuz' | 'sector7g' | 'rotterdam' | 'amazon'>('hormuz');
-
-  const presets = [
-    {
-      id: 'hormuz',
-      label: 'Strait of Hormuz',
-      coords: '26.2341° N, 54.3412° E',
-      image: STITCH_IMAGES.hormuzStrait,
-      sensor: 'Optical Multi-Spectral',
-    },
-    {
-      id: 'sector7g',
-      label: 'Sector 7G Port',
-      coords: "34°05'N 118°15'W",
-      image: STITCH_IMAGES.sector7gPort,
-      sensor: 'SAR-X Band',
-    },
-    {
-      id: 'rotterdam',
-      label: 'Port of Rotterdam',
-      coords: '51.9493° N, 4.1481° E',
-      image: STITCH_IMAGES.rotterdamPort,
-      sensor: 'Sentinel-2 (10m GSD)',
-    },
-    {
-      id: 'amazon',
-      label: 'Amazon Basin',
-      coords: "03°12'S 60°02'W",
-      image: STITCH_IMAGES.urbanDeforestation,
-      sensor: 'Landsat-9 / Sentinel-1',
-    },
-  ];
-
-  const quickQueries = [
-    'Analyze vessel patterns in sector 7G. Any deviations from standard maritime routes?',
-    'Identify water bodies and calculate moisture index',
-    'Detect changes against baseline acquisition',
-    'Measure industrial container volume expansion',
-  ];
 
   const parameterList: DetectionParameter[] = ['VESSELS', 'AIRCRAFT', 'INFRASTRUCTURE', 'VEHICLES'];
-
-  const handleSelectPreset = (preset: typeof presets[0]) => {
-    setActivePreset(preset.id as any);
-    setCurrentImage(preset.image);
-    setTargetCoordinates(preset.coords);
-  };
 
   const handleSendQuery = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -80,7 +39,6 @@ export const AnalysisConsole: React.FC = () => {
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       addUploadedFile(file.name, file);
-      // create preview URL
       const objectUrl = URL.createObjectURL(file);
       setCurrentImage(objectUrl);
     }
@@ -88,16 +46,22 @@ export const AnalysisConsole: React.FC = () => {
 
   return (
     <div className="flex-1 mt-16 flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden bg-grid-pattern relative select-none">
-      {/* 1. Left Navigation & Analysis Controls Rail (Desktop) */}
-      <aside className="hidden lg:flex flex-col w-[280px] bg-surface-container-low/95 backdrop-blur-2xl border-r border-outline-variant/20 h-full shadow-2xl z-30 shrink-0 overflow-y-auto">
+      {/* 1. Left Navigation & Specialist Model Suite Rail */}
+      <aside className="hidden lg:flex flex-col w-[300px] bg-surface-container-low/95 backdrop-blur-2xl border-r border-outline-variant/20 h-full shadow-2xl z-30 shrink-0 overflow-y-auto">
         {/* Mission Control Header */}
         <div className="px-5 py-4 border-b border-outline-variant/10 flex items-center justify-between">
           <h2 className="font-headline-md text-sm font-bold tracking-wider text-primary flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-[18px]">space_dashboard</span>
             MISSION CONTROL
           </h2>
-          <span className="font-mono-data text-[10px] text-tertiary px-1.5 py-0.5 rounded bg-tertiary/10 border border-tertiary/30">
-            ACTIVE
+          <span
+            className={`font-mono-data text-[10px] px-1.5 py-0.5 rounded border ${
+              backendConnected
+                ? 'text-tertiary bg-tertiary/10 border-tertiary/30'
+                : 'text-error bg-error/10 border-error/30'
+            }`}
+          >
+            {backendConnected ? 'LIVE BACKEND' : 'OFFLINE'}
           </span>
         </div>
 
@@ -128,38 +92,70 @@ export const AnalysisConsole: React.FC = () => {
           </button>
         </nav>
 
-        {/* Operational Theaters / Presets */}
-        <div className="p-3 border-t border-outline-variant/10">
-          <span className="font-mono-label text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2 px-1">
-            TARGET SECTORS
-          </span>
-          <div className="space-y-1.5">
-            {presets.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => handleSelectPreset(p)}
-                className={`w-full p-2 rounded text-left transition-all flex flex-col gap-0.5 text-xs font-mono-data ${
-                  activePreset === p.id
-                    ? 'bg-primary/10 border border-primary/40 text-primary shadow-[0_0_10px_rgba(34,211,238,0.15)]'
-                    : 'bg-surface-container/40 border border-outline-variant/20 text-on-surface-variant hover:border-primary/30 hover:text-on-surface'
-                }`}
-              >
-                <div className="flex justify-between items-center">
-                  <span className="font-semibold">{p.label}</span>
-                  {activePreset === p.id && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-                  )}
-                </div>
-                <span className="text-[10px] opacity-70">{p.coords}</span>
-              </button>
-            ))}
+        {/* Registered Specialist Models from Backend */}
+        <div className="p-3 border-t border-outline-variant/10 flex-1 overflow-y-auto">
+          <div className="flex justify-between items-center mb-2 px-1">
+            <span className="font-mono-label text-[10px] text-on-surface-variant uppercase tracking-widest block">
+              SPECIALIST MODELS ({availableModels.length})
+            </span>
+            <span className="font-mono-data text-[9px] text-tertiary">http://localhost:8000</span>
+          </div>
+
+          <div className="space-y-2">
+            {availableModels.length > 0 ? (
+              availableModels.map((m) => {
+                const isSelected = selectedModel.toLowerCase() === m.name.toLowerCase();
+                return (
+                  <button
+                    key={m.name}
+                    onClick={() => setSelectedModel(m.name)}
+                    className={`w-full p-2.5 rounded text-left transition-all flex flex-col gap-1 text-xs font-mono-data border ${
+                      isSelected
+                        ? 'bg-primary/10 border-primary/50 text-primary shadow-[0_0_12px_rgba(34,211,238,0.2)]'
+                        : 'bg-surface-container/40 border-outline-variant/20 text-on-surface-variant hover:border-primary/30 hover:text-on-surface'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center font-bold">
+                      <span className="flex items-center gap-1.5">
+                        <span className="material-symbols-outlined text-[14px] text-primary">memory</span>
+                        {m.name}
+                      </span>
+                      {isSelected && (
+                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                      )}
+                    </div>
+                    {m.capabilities?.description && (
+                      <p className="text-[10px] opacity-75 font-body-sm line-clamp-2 leading-tight">
+                        {m.capabilities.description}
+                      </p>
+                    )}
+                    {m.capabilities?.supported_modalities && (
+                      <div className="flex flex-wrap gap-1 mt-0.5">
+                        {m.capabilities.supported_modalities.map((mod) => (
+                          <span
+                            key={mod}
+                            className="text-[9px] px-1 py-0.2 rounded bg-surface-bright text-outline-variant uppercase"
+                          >
+                            {mod}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </button>
+                );
+              })
+            ) : (
+              <div className="p-3 bg-surface-container/30 border border-outline-variant/20 rounded text-[11px] font-mono-data text-outline">
+                Fetching registered models from backend...
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Image Upload Zone in Left Rail */}
-        <div className="p-3 mt-auto border-t border-outline-variant/10">
+        {/* Custom Imagery Upload */}
+        <div className="p-3 border-t border-outline-variant/10">
           <span className="font-mono-label text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2 px-1">
-            CUSTOM IMAGERY UPLOAD
+            TARGET IMAGERY UPLOAD
           </span>
           <label className="border border-dashed border-outline-variant hover:border-primary/50 bg-surface-container-lowest/50 rounded p-3 flex flex-col items-center justify-center cursor-pointer transition-all group text-center">
             <input
@@ -172,32 +168,27 @@ export const AnalysisConsole: React.FC = () => {
               cloud_upload
             </span>
             <span className="font-mono-label text-[10px] text-on-surface-variant group-hover:text-primary">
-              DROP GEOTIFF / SAR FILE
+              UPLOAD SATELLITE FILE
             </span>
             <span className="font-mono-data text-[9px] text-outline mt-0.5">
-              MAX 500MB (RGB/SAR)
+              RGB / MULTISPECTRAL / SAR
             </span>
           </label>
         </div>
       </aside>
 
-      {/* 2. Center: Large Satellite Image Viewport */}
+      {/* 2. Center: Satellite Viewport Canvas */}
       <main className="flex-1 relative flex flex-col h-full overflow-hidden bg-black">
-        {/* Top Floating Viewport HUD */}
+        {/* Viewport HUD Header */}
         <div className="absolute top-3 left-3 right-3 z-20 flex justify-between items-center pointer-events-none">
-          {/* Target Title & Mode */}
           <div className="bg-surface/85 backdrop-blur-md px-3 py-1.5 rounded border border-outline-variant/40 flex items-center gap-2 pointer-events-auto shadow-lg">
             <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
-            <span className="font-mono-label text-xs text-primary font-bold">
-              {presets.find((p) => p.id === activePreset)?.label.toUpperCase() || 'SATELLITE VIEWPORT'}
-            </span>
-            <span className="text-outline-variant">|</span>
-            <span className="font-mono-data text-[11px] text-on-surface-variant">
-              GSD 0.5M // LIVE FEED
+            <span className="font-mono-label text-xs text-primary font-bold uppercase">
+              {selectedModel} // WORKSPACE VIEWPORT
             </span>
           </div>
 
-          {/* Floating Map Controls */}
+          {/* Controls */}
           <div className="flex gap-1.5 bg-surface/85 backdrop-blur-md p-1 rounded border border-outline-variant/40 pointer-events-auto shadow-lg">
             <button
               onClick={() => setZoomLevel((z) => Math.min(z + 0.25, 2.5))}
@@ -220,150 +211,158 @@ export const AnalysisConsole: React.FC = () => {
             >
               <span className="material-symbols-outlined text-[18px]">restart_alt</span>
             </button>
-            <button
-              onClick={() => setCurrentScreen('temporal')}
-              className="p-1 rounded hover:bg-surface-bright text-primary transition-colors"
-              title="Compare Temporal Overlays"
-            >
-              <span className="material-symbols-outlined text-[18px]">layers</span>
-            </button>
           </div>
         </div>
 
-        {/* Central Satellite Image Canvas Container */}
+        {/* Satellite Canvas */}
         <div className="flex-1 relative overflow-hidden flex items-center justify-center cursor-crosshair">
-          {/* Base Satellite Imagery */}
-          <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-300 ease-out"
-            style={{
-              backgroundImage: `url('${currentImage}')`,
-              transform: `scale(${zoomLevel})`,
-              filter: 'brightness(0.9) contrast(1.15)',
-            }}
-          />
+          {currentImage ? (
+            <div
+              className="absolute inset-0 bg-cover bg-center transition-transform duration-300 ease-out"
+              style={{
+                backgroundImage: `url('${currentImage}')`,
+                transform: `scale(${zoomLevel})`,
+                filter: 'brightness(0.9) contrast(1.15)',
+              }}
+            />
+          ) : (
+            <div className="p-8 text-center space-y-3 relative z-10 max-w-sm">
+              <label className="border-2 border-dashed border-primary/40 hover:border-primary p-8 rounded-xl bg-surface-container-lowest/40 flex flex-col items-center justify-center cursor-pointer transition-all group">
+                <input type="file" accept=".tif,.tiff,.png,.jpg,.jpeg" onChange={handleFileUpload} className="hidden" />
+                <span className="material-symbols-outlined text-primary text-[48px] mb-2 group-hover:scale-110 transition-transform">
+                  add_photo_alternate
+                </span>
+                <span className="font-mono-label text-xs text-primary font-bold">
+                  UPLOAD SATELLITE IMAGERY
+                </span>
+                <span className="font-mono-data text-[10px] text-on-surface-variant mt-1">
+                  Drag &amp; drop GeoTIFF / SAR file or click to select file
+                </span>
+              </label>
+            </div>
+          )}
 
-          {/* Grid Overlay for Instrumental Realism */}
+          {/* Grid Overlay */}
           <div className="absolute inset-0 bg-grid-dense pointer-events-none opacity-40"></div>
 
-          {/* Center Targeting Reticle / Crosshairs Overlay */}
-          <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-            {/* Outer Circular Reticle */}
-            <div className="w-40 h-40 border border-primary/25 rounded-full relative flex items-center justify-center animate-pulse">
-              <div className="w-24 h-24 border border-primary/40 rounded-full"></div>
-              {/* Horizontal line */}
-              <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-primary/40"></div>
-              {/* Vertical line */}
-              <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-primary/40"></div>
-              {/* Center Glowing Dot */}
-              <div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_12px_rgba(34,211,238,1)]"></div>
+          {/* Targeting Reticle */}
+          {currentImage && (
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+              <div className="w-40 h-40 border border-primary/25 rounded-full relative flex items-center justify-center animate-pulse">
+                <div className="w-24 h-24 border border-primary/40 rounded-full"></div>
+                <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-primary/40"></div>
+                <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-primary/40"></div>
+                <div className="w-2 h-2 bg-primary rounded-full shadow-[0_0_12px_rgba(34,211,238,1)]"></div>
+              </div>
+
+              <div className="corner-tl"></div>
+              <div className="corner-tr"></div>
+              <div className="corner-bl"></div>
+              <div className="corner-br"></div>
             </div>
+          )}
 
-            {/* Corner Brackets on Viewport */}
-            <div className="corner-tl"></div>
-            <div className="corner-tr"></div>
-            <div className="corner-bl"></div>
-            <div className="corner-br"></div>
-          </div>
+          {/* Grounded Boxes if Session Exists */}
+          {session?.groundedBoxes && session.groundedBoxes.length > 0 && (
+            session.groundedBoxes.map((box, idx) => {
+              const [y1, x1, y2, x2] = box;
+              const top = y1 > 1 ? (y1 / 1000) * 100 : y1 * 100;
+              const left = x1 > 1 ? (x1 / 1000) * 100 : x1 * 100;
+              const height = y2 > 1 ? ((y2 - y1) / 1000) * 100 : (y2 - y1) * 100;
+              const width = x2 > 1 ? ((x2 - x1) / 1000) * 100 : (x2 - x1) * 100;
 
-          {/* Simulated Detection Bounding Box */}
-          <div className="absolute top-[28%] left-[38%] border border-tertiary bg-tertiary/10 p-1 pointer-events-none shadow-[0_0_12px_rgba(104,245,184,0.3)]">
-            <span className="font-mono-label text-[9px] text-tertiary bg-black/80 px-1 py-0.5 rounded block">
-              TARGET_LOCK: TANKER (98%)
-            </span>
-          </div>
+              return (
+                <div
+                  key={idx}
+                  className="absolute border-2 border-tertiary bg-tertiary/10 p-1 pointer-events-none shadow-[0_0_16px_rgba(104,245,184,0.4)]"
+                  style={{
+                    top: `${Math.max(5, Math.min(top, 75))}%`,
+                    left: `${Math.max(5, Math.min(left, 75))}%`,
+                    width: `${Math.max(10, Math.min(width, 85))}%`,
+                    height: `${Math.max(10, Math.min(height, 85))}%`,
+                  }}
+                >
+                  <span className="font-mono-label text-[9px] text-black bg-tertiary px-1 py-0.5 rounded -top-4 left-0 absolute font-bold">
+                    TARGET #{idx + 1}
+                  </span>
+                </div>
+              );
+            })
+          )}
 
-          {/* Bottom Floating Coordinates HUD */}
-          <div className="absolute bottom-4 left-4 bg-surface/90 backdrop-blur-md border border-outline-variant/40 px-3 py-1.5 rounded flex items-center gap-3 font-mono-data text-xs text-secondary shadow-lg z-20">
-            <span>{targetCoordinates}</span>
-            <span className="w-[1px] h-3 bg-outline-variant"></span>
-            <span className="text-tertiary">Z: {Math.round(zoomLevel * 14)}</span>
-          </div>
-
-          {/* Quick Mobile Upload Trigger */}
-          <div className="block lg:hidden absolute bottom-4 right-4 z-20">
-            <label className="bg-primary-container text-surface-dim p-2.5 rounded-full shadow-lg flex items-center justify-center cursor-pointer">
-              <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
-              <span className="material-symbols-outlined text-[20px]">add_photo_alternate</span>
-            </label>
-          </div>
+          {/* Coordinates HUD */}
+          {targetCoordinates && (
+            <div className="absolute bottom-4 left-4 bg-surface/90 backdrop-blur-md border border-outline-variant/40 px-3 py-1.5 rounded flex items-center gap-3 font-mono-data text-xs text-secondary shadow-lg z-20">
+              <span>{targetCoordinates}</span>
+              <span className="w-[1px] h-3 bg-outline-variant"></span>
+              <span className="text-tertiary">ZOOM: {Math.round(zoomLevel * 100)}%</span>
+            </div>
+          )}
         </div>
       </main>
 
-      {/* 3. Right: Telemetry, Parameters & AI Query Panel */}
+      {/* 3. Right: Telemetry & Neural Query Panel */}
       <aside className="w-full lg:w-[380px] bg-surface/95 backdrop-blur-2xl border-l border-outline-variant/30 flex flex-col z-30 shrink-0 h-auto lg:h-full max-h-[50vh] lg:max-h-full overflow-y-auto">
         {/* Telemetry Section Header */}
         <div className="p-4 border-b border-outline-variant/20">
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-mono-label text-xs text-on-surface-variant flex items-center gap-2 uppercase tracking-wider">
               <span className="material-symbols-outlined text-primary text-[16px]">query_stats</span>
-              TELEMETRY & SENSOR SUITE
+              TELEMETRY &amp; SENSOR SUITE
             </h3>
             <span className="font-mono-data text-[10px] text-tertiary flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
-              LIVE SYNC
+              LIVE
             </span>
           </div>
 
-          {/* Telemetry Grid */}
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="bg-surface-container-highest/40 border border-outline-variant/30 p-2.5 rounded tech-border">
-              <div className="font-mono-label text-[10px] text-on-surface-variant/70">ALTITUDE</div>
-              <div className="font-mono-data text-primary text-base font-bold">450.2 KM</div>
-            </div>
-            <div className="bg-surface-container-highest/40 border border-outline-variant/30 p-2.5 rounded tech-border">
-              <div className="font-mono-label text-[10px] text-on-surface-variant/70">VELOCITY</div>
-              <div className="font-mono-data text-tertiary text-base font-bold">7.66 KM/S</div>
-            </div>
-            <div className="bg-surface-container-highest/40 border border-outline-variant/30 p-2.5 rounded col-span-2 flex justify-between items-center">
+          <div className="space-y-2 text-xs">
+            <div className="bg-surface-container-highest/40 border border-outline-variant/30 p-2.5 rounded flex justify-between items-center">
               <div>
-                <div className="font-mono-label text-[10px] text-on-surface-variant/70">SENSOR / PLATFORM</div>
-                <div className="font-mono-data text-on-surface text-xs font-medium">
-                  {session?.sensor || 'GeoChat-7B (VLM Gateway)'}
-                </div>
+                <div className="font-mono-label text-[10px] text-on-surface-variant/70">ACTIVE MODEL</div>
+                <div className="font-mono-data text-primary text-sm font-bold">{selectedModel}</div>
               </div>
-              <span className="font-mono-data text-[10px] text-secondary border border-secondary/30 px-1.5 py-0.5 rounded">
-                Sentinel-2
+              <span className="font-mono-data text-[10px] text-tertiary border border-tertiary/30 px-1.5 py-0.5 rounded">
+                GPU READY
               </span>
             </div>
+            <div className="bg-surface-container-highest/40 border border-outline-variant/30 p-2.5 rounded">
+              <div className="font-mono-label text-[10px] text-on-surface-variant/70 mb-1">TARGET COORDINATES</div>
+              <input
+                type="text"
+                value={targetCoordinates}
+                onChange={(e) => setTargetCoordinates(e.target.value)}
+                placeholder="Enter target coordinates (e.g. 26.23° N, 54.34° E)..."
+                className="w-full bg-surface-container-lowest border-b border-outline-variant/50 px-2 py-1 text-xs font-mono-data text-on-surface focus:outline-none focus:border-primary"
+              />
+            </div>
           </div>
 
-          {/* Detected Entities / Categories Tags */}
-          <div className="mt-3">
-            <div className="font-mono-label text-[10px] text-on-surface-variant/70 mb-1.5 uppercase">
-              DETECTED ENTITIES IN VIEWPORT
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {session?.categories && session.categories.length > 0 ? (
-                session.categories.map((cat, idx) => (
+          {/* Uploaded Files Chips */}
+          {uploadedFiles.length > 0 && (
+            <div className="mt-3">
+              <div className="font-mono-label text-[10px] text-on-surface-variant/70 mb-1.5 uppercase">
+                LOADED SATELLITE PAYLOADS ({uploadedFiles.length})
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {uploadedFiles.map((file, idx) => (
                   <span
                     key={idx}
-                    className="px-2 py-0.5 rounded font-mono-label text-[10px] flex items-center gap-1 border bg-tertiary/10 border-tertiary/30 text-tertiary"
+                    className="px-2 py-0.5 rounded font-mono-data text-[10px] text-primary bg-primary/10 border border-primary/20 flex items-center gap-1"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                    {cat.toUpperCase()} ({session.confidenceScore || 90}%)
+                    <span className="material-symbols-outlined text-[10px]">image</span>
+                    {file}
                   </span>
-                ))
-              ) : selectedParameters.length > 0 ? (
-                selectedParameters.map((param) => (
-                  <span
-                    key={param}
-                    className="px-2 py-0.5 rounded font-mono-label text-[10px] flex items-center gap-1 border bg-secondary/10 border-secondary/30 text-secondary"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                    {param}
-                  </span>
-                ))
-              ) : (
-                <span className="font-mono-data text-[10px] text-outline">No active detection tags</span>
-              )}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Detection Task Parameter Chips */}
+        {/* Detection Filters */}
         <div className="p-4 border-b border-outline-variant/20">
           <div className="font-mono-label text-[10px] text-primary mb-2 tracking-wider">
-            ACTIVE DETECTION FILTERS
+            DETECTION FILTERS
           </div>
           <div className="flex flex-wrap gap-1.5">
             {parameterList.map((param) => {
@@ -386,31 +385,7 @@ export const AnalysisConsole: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Query Chips */}
-        <div className="p-4 border-b border-outline-variant/20">
-          <div className="font-mono-label text-[10px] text-on-surface-variant mb-2 tracking-wider">
-            SUGGESTED QUERIES
-          </div>
-          <div className="space-y-1.5">
-            {quickQueries.map((q, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  setInputQuery(q);
-                  sendChatMessage(q);
-                }}
-                className="w-full text-left text-[11px] font-mono-data text-primary/90 bg-surface-container-lowest/80 border border-primary/20 hover:border-primary/50 hover:bg-primary/5 p-2 rounded transition-all flex items-start gap-1.5 group"
-              >
-                <span className="material-symbols-outlined text-[13px] text-primary shrink-0 mt-0.5 group-hover:translate-x-0.5 transition-transform">
-                  terminal
-                </span>
-                <span className="line-clamp-1">{q}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Neural Query Interface & Primary Action */}
+        {/* Neural Query Stream */}
         <div className="p-4 flex-1 flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-center mb-2">
@@ -418,45 +393,45 @@ export const AnalysisConsole: React.FC = () => {
                 <span className="material-symbols-outlined text-[16px]">psychology</span>
                 NEURAL QUERY INTERFACE
               </span>
-              <span className="font-mono-data text-[10px] text-outline">v4.2.0</span>
             </div>
 
             {/* Chat Dialog Stream */}
             <div className="bg-surface-container-lowest/90 border border-outline-variant/30 rounded p-2.5 max-h-36 overflow-y-auto space-y-2 mb-3 text-xs font-body-sm">
-              {chatMessages.slice(-2).map((msg) => (
-                <div key={msg.id} className="space-y-1">
-                  <div className="flex items-center gap-1 font-mono-label text-[10px] text-on-surface-variant">
-                    <span className="material-symbols-outlined text-[12px]">
-                      {msg.sender === 'user' ? 'person' : 'smart_toy'}
-                    </span>
-                    <span>{msg.sender === 'user' ? 'ANALYST' : 'SATQUERY AGENT'}</span>
-                    <span className="text-[9px] opacity-60 ml-auto">{msg.timestamp}</span>
+              {chatMessages.length > 0 ? (
+                chatMessages.slice(-2).map((msg) => (
+                  <div key={msg.id} className="space-y-1">
+                    <div className="flex items-center gap-1 font-mono-label text-[10px] text-on-surface-variant">
+                      <span className="material-symbols-outlined text-[12px]">
+                        {msg.sender === 'user' ? 'person' : 'smart_toy'}
+                      </span>
+                      <span>{msg.sender === 'user' ? 'ANALYST' : 'SATQUERY AGENT'}</span>
+                      <span className="text-[9px] opacity-60 ml-auto">{msg.timestamp}</span>
+                    </div>
+                    <div
+                      className={`p-2 rounded ${
+                        msg.sender === 'user'
+                          ? 'bg-surface-variant/40 text-on-surface-variant'
+                          : 'bg-primary/10 border border-primary/20 text-on-surface'
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
                   </div>
-                  <div
-                    className={`p-2 rounded ${
-                      msg.sender === 'user'
-                        ? 'bg-surface-variant/40 text-on-surface-variant'
-                        : 'bg-primary/10 border border-primary/20 text-on-surface'
-                    }`}
-                  >
-                    {msg.text}
-                    {msg.alertText && (
-                      <div className="text-tertiary mt-1 font-mono-data text-[11px] font-medium">
-                        {msg.alertText}
-                      </div>
-                    )}
-                  </div>
+                ))
+              ) : (
+                <div className="text-outline text-[11px] font-mono-data py-2 text-center">
+                  Submit a query to begin live inference stream.
                 </div>
-              ))}
+              )}
             </div>
 
-            {/* Interactive Query Input Field */}
+            {/* Interactive Input */}
             <form onSubmit={handleSendQuery} className="relative mb-3">
               <input
                 type="text"
                 value={inputQuery}
                 onChange={(e) => setInputQuery(e.target.value)}
-                placeholder="Ask about this satellite imagery..."
+                placeholder="Ask about this imagery..."
                 className="w-full bg-surface-container-lowest border-b border-outline-variant/60 focus:border-primary px-3 py-2 pr-10 text-xs text-on-surface placeholder:text-outline-variant focus:outline-none transition-colors"
               />
               <button
@@ -469,15 +444,15 @@ export const AnalysisConsole: React.FC = () => {
             </form>
           </div>
 
-          {/* Primary ANALYZE / EXECUTE Button */}
+          {/* Primary Action Button */}
           <button
-            onClick={() => startAnalysisFlow(inputQuery || quickQueries[0], currentImage)}
+            onClick={() => startAnalysisFlow(inputQuery)}
             className="w-full bg-primary-container text-surface-dim font-mono-label text-xs py-3 px-4 rounded hover:bg-primary-fixed-dim font-bold flex items-center justify-center gap-2 shadow-[0_0_18px_rgba(34,211,238,0.35)] transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
               rocket_launch
             </span>
-            <span>ANALYZE & EXECUTE PROTOCOL</span>
+            <span>EXECUTE ANALYSIS PROTOCOL</span>
           </button>
         </div>
       </aside>

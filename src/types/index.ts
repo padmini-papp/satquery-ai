@@ -62,6 +62,8 @@ export interface AnalysisSession {
   thermalAnomalyAlert: string;
   verification: VerificationItem[];
   imageryUrl: string;
+  beforeImageryUrl?: string;
+  afterImageryUrl?: string;
   traceSteps: TraceStep[];
   modelUsed?: string;
   processingTimeMs?: number;

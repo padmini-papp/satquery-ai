@@ -13,9 +13,11 @@ export const LandingScreen: React.FC = () => {
     toggleParameter,
     startAnalysisFlow,
     setCurrentImage,
+    availableModels,
+    backendConnected,
   } = useApp();
 
-  const [queryInput, setQueryInput] = useState<string>('Analyze vessel patterns in sector 7G. Any deviations from standard maritime routes?');
+  const [queryInput, setQueryInput] = useState<string>('');
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -36,8 +38,6 @@ export const LandingScreen: React.FC = () => {
       const file = e.dataTransfer.files[0];
       addUploadedFile(file.name, file);
       setCurrentImage(URL.createObjectURL(file));
-    } else {
-      addUploadedFile('optical_sar_pair_t1_t2.tif');
     }
   };
 
@@ -60,17 +60,22 @@ export const LandingScreen: React.FC = () => {
       <div className="fixed inset-0 grid-bg pointer-events-none z-0"></div>
       <div className="fixed inset-0 bg-ambient-glow pointer-events-none z-0"></div>
 
-      {/* Main Responsive Canvas */}
+      {/* Main Canvas */}
       <div className="max-w-6xl w-full flex flex-col lg:flex-row gap-xl items-center relative z-10 my-auto py-6">
-        {/* Left: Typography & Primary Action (Desktop & Mobile) */}
+        {/* Left: Headline & Live Backend Status */}
         <div className="flex-1 space-y-md md:space-y-lg text-center lg:text-left">
           {/* Status Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/5 text-primary font-mono-label text-mono-label">
+          <div
+            className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs font-mono-label ${
+              backendConnected
+                ? 'border-tertiary/30 bg-tertiary/10 text-tertiary'
+                : 'border-error/30 bg-error/10 text-error'
+            }`}
+          >
             <span className="material-symbols-outlined text-[14px]">radar</span>
-            GLOBAL COVERAGE SECURED
+            {backendConnected ? 'LOCAL BACKEND ONLINE (PORT 8000)' : 'CONNECTING TO BACKEND...'}
           </div>
 
-          {/* Headline with Luminous Accent */}
           <h1 className="font-display-lg text-headline-lg-mobile sm:text-headline-lg lg:text-display-lg text-on-surface font-bold tracking-tight">
             Synthesize Global Intelligence in{' '}
             <span className="text-primary-container drop-shadow-[0_0_16px_rgba(34,211,238,0.5)]">
@@ -78,10 +83,29 @@ export const LandingScreen: React.FC = () => {
             </span>
           </h1>
 
-          {/* Body Narrative */}
           <p className="font-body-lg text-body-md sm:text-body-lg text-on-surface-variant max-w-2xl mx-auto lg:mx-0">
-            Deploy neural networks against multi-modal satellite imagery. Initiate complex spatial queries and receive instantaneous, actionable telemetry across designated operational theaters.
+            Deploy neural specialist models against multi-modal satellite imagery. Initiate complex spatial queries and receive instantaneous, actionable telemetry from your backend.
           </p>
+
+          {/* Registered Models List from Backend */}
+          {availableModels.length > 0 && (
+            <div className="pt-2">
+              <span className="font-mono-label text-[10px] text-on-surface-variant uppercase tracking-widest block mb-2">
+                REGISTERED BACKEND MODELS
+              </span>
+              <div className="flex flex-wrap gap-1.5 justify-center lg:justify-start">
+                {availableModels.map((m) => (
+                  <span
+                    key={m.name}
+                    className="px-2.5 py-1 rounded font-mono-data text-xs bg-surface-container/60 border border-outline-variant/30 text-primary flex items-center gap-1.5"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    {m.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Action CTAs */}
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-md pt-sm">
@@ -103,60 +127,41 @@ export const LandingScreen: React.FC = () => {
               TEMPORAL ANALYSIS
             </button>
           </div>
-
-          {/* Mobile Terminal Simulation Stream */}
-          <div className="block lg:hidden w-full max-w-md mx-auto bg-surface-dim/90 p-3 rounded border border-outline-variant/30 text-left font-mono-data text-xs space-y-1 mt-4">
-            <div className="text-outline-variant/70">&gt; Initializing neural pathways...</div>
-            <div className="text-outline-variant/70">&gt; Establishing satellite link...</div>
-            <div className="text-tertiary animate-pulse">&gt; Ready for query input_</div>
-          </div>
         </div>
 
-        {/* Right: Neural Query Interface Glass Panel */}
+        {/* Right: Live Neural Query Interface Panel */}
         <div className="w-full max-w-md lg:max-w-lg glass-panel p-md sm:p-lg rounded-xl tech-border shadow-2xl relative">
-          {/* 4 Corner L-Brackets */}
           <div className="corner-tl"></div>
           <div className="corner-tr"></div>
           <div className="corner-bl"></div>
           <div className="corner-br"></div>
 
-          {/* Card Header */}
           <div className="flex justify-between items-center mb-md border-b border-outline-variant/30 pb-sm">
             <span className="font-mono-label text-mono-label text-on-surface-variant flex items-center gap-2 tracking-wider">
               <span className="material-symbols-outlined text-primary text-[16px]">memory</span>
               NEURAL QUERY INTERFACE
             </span>
             <span className="font-mono-data text-mono-data text-tertiary text-xs px-2 py-0.5 rounded bg-tertiary/10 border border-tertiary/30">
-              v4.2.0
+              http://localhost:8000
             </span>
           </div>
 
           <div className="space-y-md">
-            {/* Target Area Input */}
+            {/* Target Location Input */}
             <div>
               <label className="font-mono-label text-mono-label text-primary block mb-1.5 tracking-wider">
-                TARGET COORDINATES / ALIAS
+                TARGET COORDINATES / LOCATION ALIAS
               </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={targetCoordinates}
-                  onChange={(e) => setTargetCoordinates(e.target.value)}
-                  className="w-full bg-surface-container-lowest border-b border-outline-variant text-on-surface font-mono-data text-mono-data py-2 px-3 pr-10 focus:outline-none focus:border-primary focus:shadow-[0_2px_12px_-2px_rgba(34,211,238,0.5)] transition-all rounded-t"
-                  placeholder="e.g. 34.0522° N, 118.2437° W or 'Port of LA'"
-                />
-                <button
-                  type="button"
-                  onClick={() => setTargetCoordinates("26.2341° N, 54.3412° E (Strait of Hormuz)")}
-                  className="material-symbols-outlined absolute right-3 top-2.5 text-on-surface-variant hover:text-primary transition-colors text-[18px]"
-                  title="Insert Strait of Hormuz preset"
-                >
-                  my_location
-                </button>
-              </div>
+              <input
+                type="text"
+                value={targetCoordinates}
+                onChange={(e) => setTargetCoordinates(e.target.value)}
+                className="w-full bg-surface-container-lowest border-b border-outline-variant text-on-surface font-mono-data text-mono-data py-2 px-3 focus:outline-none focus:border-primary transition-all rounded-t"
+                placeholder="Enter target coordinates (e.g. 26.23° N, 54.34° E or Sector name)"
+              />
             </div>
 
-            {/* Drag & Drop Reference Imagery Upload Zone */}
+            {/* Drag & Drop Upload */}
             <div>
               <label className="font-mono-label text-mono-label text-primary block mb-1.5 tracking-wider">
                 REFERENCE IMAGERY UPLOAD
@@ -183,13 +188,9 @@ export const LandingScreen: React.FC = () => {
                   cloud_upload
                 </span>
                 <span className="font-mono-label text-mono-label text-on-surface-variant group-hover:text-primary transition-colors text-center">
-                  DRAG & DROP SAR / OPTICAL FILES
-                </span>
-                <span className="font-mono-data text-mono-data text-outline mt-1 text-[10px]">
-                  MAX 500MB (.TIFF, .NTF, .PNG)
+                  DRAG &amp; DROP SATELLITE IMAGE (.TIFF, .PNG, .JPG)
                 </span>
 
-                {/* Uploaded Files Chips */}
                 {uploadedFiles.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1 justify-center">
                     {uploadedFiles.map((file, idx) => (
@@ -242,24 +243,16 @@ export const LandingScreen: React.FC = () => {
               </label>
               <div className="relative group/box">
                 <div className="relative flex flex-col bg-surface-container-lowest border border-primary/30 rounded overflow-hidden">
-                  <div className="flex items-center px-sm py-1 border-b border-primary/10 bg-primary/5">
-                    <span className="material-symbols-outlined text-[14px] text-primary mr-1">
-                      psychology
-                    </span>
-                    <span className="font-mono-label text-[10px] text-primary/70 tracking-widest">
-                      QUERY_PROTOCOL_BUFFER
-                    </span>
-                  </div>
                   <textarea
                     value={queryInput}
                     onChange={(e) => setQueryInput(e.target.value)}
                     rows={3}
                     className="w-full bg-transparent border-none focus:ring-0 p-2.5 font-mono-data text-mono-data text-primary placeholder:text-primary/30 resize-none text-xs focus:outline-none"
-                    placeholder="> Enter orbital query..."
+                    placeholder="Enter satellite imagery query prompt..."
                   />
                   <div className="flex justify-between items-center p-2 bg-primary/5 border-t border-primary/10">
                     <span className="font-mono-data text-[10px] text-on-surface-variant/60 pl-1">
-                      Ready for inference
+                      Ready for backend inference
                     </span>
                     <button
                       onClick={handleExecute}
@@ -276,13 +269,6 @@ export const LandingScreen: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Ambient System Telemetry Watermark (Desktop) */}
-      <div className="hidden lg:block absolute bottom-6 left-8 z-0 opacity-50 font-mono-data text-mono-data text-outline text-xs leading-relaxed pointer-events-none">
-        SYS.OP.MODE: NORMAL<br />
-        LATENCY: 42ms<br />
-        UPLINK: ACTIVE
       </div>
     </div>
   );

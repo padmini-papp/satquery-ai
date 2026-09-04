@@ -190,26 +190,26 @@ export const AnalysisResultScreen: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="glass-panel p-3 rounded-lg flex flex-col border-l-2 border-l-tertiary">
               <span className="font-mono-label text-[10px] text-on-surface-variant">LAT/LONG</span>
-              <span className="font-mono-data text-xs text-primary font-bold mt-0.5">
+              <span className="font-mono-data text-xs text-primary font-bold mt-0.5 truncate">
                 {session.coordinates}
               </span>
             </div>
             <div className="glass-panel p-3 rounded-lg flex flex-col border-l-2 border-l-primary">
-              <span className="font-mono-label text-[10px] text-on-surface-variant">SENSOR BAND</span>
-              <span className="font-mono-data text-xs text-primary font-bold mt-0.5">
+              <span className="font-mono-label text-[10px] text-on-surface-variant">MODEL / SENSOR</span>
+              <span className="font-mono-data text-xs text-primary font-bold mt-0.5 truncate">
                 {session.sensor}
               </span>
             </div>
             <div className="glass-panel p-3 rounded-lg flex flex-col border-l-2 border-l-secondary">
-              <span className="font-mono-label text-[10px] text-on-surface-variant">ELEVATION</span>
+              <span className="font-mono-label text-[10px] text-on-surface-variant">CONFIDENCE SCORE</span>
               <span className="font-mono-data text-xs text-secondary font-bold mt-0.5">
-                452m MSL
+                {session.confidenceScore}%
               </span>
             </div>
             <div className="glass-panel p-3 rounded-lg flex flex-col border-l-2 border-l-outline-variant">
-              <span className="font-mono-label text-[10px] text-on-surface-variant">CLOUD COVER</span>
-              <span className="font-mono-data text-xs text-on-surface font-bold mt-0.5">
-                12% (Clear)
+              <span className="font-mono-label text-[10px] text-on-surface-variant">TIMESTAMP</span>
+              <span className="font-mono-data text-xs text-on-surface font-bold mt-0.5 truncate">
+                {session.date}
               </span>
             </div>
           </div>
@@ -221,13 +221,13 @@ export const AnalysisResultScreen: React.FC = () => {
                 NEURAL EXECUTION METRICS
               </div>
               <div className="flex justify-between py-1 border-b border-outline-variant/10">
-                <span className="text-on-surface-variant">LATENCY</span>
+                <span className="text-on-surface-variant">PROCESSING TIME</span>
                 <span className="text-tertiary font-bold">
                   {session.executionSummary.processing_time_ms.toFixed(0)} ms
                 </span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-on-surface-variant">MODELS USED</span>
+                <span className="text-on-surface-variant">MODELS DISPATCHED</span>
                 <span className="text-primary font-bold">
                   {(session.executionSummary.models || []).join(', ')}
                 </span>
@@ -268,7 +268,7 @@ export const AnalysisResultScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Executive Summary & Anomaly Alerts */}
+          {/* Executive Summary & Grounding Details */}
           <div className="glass-panel rounded-xl p-5 flex flex-col gap-3 tech-border shadow-xl">
             <h3 className="font-headline-md text-base font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary text-[20px]">analytics</span>
@@ -279,22 +279,22 @@ export const AnalysisResultScreen: React.FC = () => {
               {session.executiveSummary}
             </p>
 
-            {/* Feature Anomaly Cards */}
+            {/* Grounding Observations */}
             <div className="space-y-2 pt-1">
               <div className="p-2.5 bg-surface-container/60 rounded border border-tertiary/30 flex items-start gap-2.5">
                 <span className="w-2 h-2 rounded-full bg-tertiary mt-1 shrink-0 shadow-[0_0_6px_rgba(104,245,184,0.8)]"></span>
                 <div>
-                  <h4 className="font-mono-label text-[11px] text-tertiary font-bold">VEHICLE CLUSTER</h4>
+                  <h4 className="font-mono-label text-[11px] text-tertiary font-bold uppercase">FEATURE GROUNDING</h4>
                   <p className="font-body-sm text-[11px] text-on-surface-variant/90 mt-0.5">
                     {session.vehicleClusterAlert}
                   </p>
                 </div>
               </div>
 
-              <div className="p-2.5 bg-surface-container/60 rounded border border-error/30 flex items-start gap-2.5">
-                <span className="w-2 h-2 rounded-full bg-error mt-1 shrink-0 shadow-[0_0_6px_rgba(255,180,171,0.8)]"></span>
+              <div className="p-2.5 bg-surface-container/60 rounded border border-secondary/30 flex items-start gap-2.5">
+                <span className="w-2 h-2 rounded-full bg-secondary mt-1 shrink-0 shadow-[0_0_6px_rgba(34,211,238,0.8)]"></span>
                 <div>
-                  <h4 className="font-mono-label text-[11px] text-error font-bold">THERMAL ANOMALY</h4>
+                  <h4 className="font-mono-label text-[11px] text-secondary font-bold uppercase">LATENCY &amp; PERFORMANCE</h4>
                   <p className="font-body-sm text-[11px] text-on-surface-variant/90 mt-0.5">
                     {session.thermalAnomalyAlert}
                   </p>
