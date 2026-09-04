@@ -7,8 +7,8 @@ export const BottomNavBar: React.FC = () => {
 
   const items: { label: string; screen: ScreenType; icon: string }[] = [
     { label: 'Workspace', screen: 'console', icon: 'dashboard' },
-    { label: 'Analysis', screen: 'result', icon: 'layers' },
     { label: 'Temporal', screen: 'temporal', icon: 'compare' },
+    { label: 'History', screen: 'history', icon: 'history' },
     { label: 'Landing', screen: 'landing', icon: 'explore' },
   ];
 

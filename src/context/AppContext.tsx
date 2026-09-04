@@ -11,6 +11,8 @@ import {
   DEFAULT_SESSION,
   DEFAULT_TRACE_STEPS,
   INITIAL_CHAT_MESSAGES,
+  MOCK_HISTORY_SESSIONS,
+  STITCH_IMAGES,
 } from '../services/mockAnalysisService';
 
 interface AppContextType {
@@ -25,11 +27,16 @@ interface AppContextType {
   selectedParameters: DetectionParameter[];
   toggleParameter: (param: DetectionParameter) => void;
   session: AnalysisSession;
+  setSession: (session: AnalysisSession) => void;
   traceSteps: TraceStep[];
   chatMessages: QueryMessage[];
   sendChatMessage: (text: string) => void;
-  startAnalysisFlow: (queryText?: string) => void;
+  startAnalysisFlow: (queryText?: string, imageUrl?: string) => void;
   isProcessing: boolean;
+  historySessions: AnalysisSession[];
+  selectHistorySession: (session: AnalysisSession) => void;
+  currentImage: string;
+  setCurrentImage: (url: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -38,7 +45,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentScreen, setCurrentScreen] = useState<ScreenType>('landing');
   const [theme, setTheme] = useState<ThemeMode>('navy');
   const [targetCoordinates, setTargetCoordinates] = useState<string>(
-    "34.0522° N, 118.2437° W or 'Port of LA'"
+    "26.2341° N, 54.3412° E (Strait of Hormuz)"
   );
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([
     'sentinel2_sector7g_b04_b08.tif',
@@ -51,6 +58,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [traceSteps, setTraceSteps] = useState<TraceStep[]>(DEFAULT_TRACE_STEPS);
   const [chatMessages, setChatMessages] = useState<QueryMessage[]>(INITIAL_CHAT_MESSAGES);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const [historySessions] = useState<AnalysisSession[]>(MOCK_HISTORY_SESSIONS);
+  const [currentImage, setCurrentImage] = useState<string>(STITCH_IMAGES.hormuzStrait);
 
   // Sync theme class with HTML document
   useEffect(() => {
@@ -76,6 +85,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const addUploadedFile = (filename: string) => {
     setUploadedFiles((prev) => [...prev, filename]);
+  };
+
+  const selectHistorySession = (selected: AnalysisSession) => {
+    setSession(selected);
+    setCurrentImage(selected.imageryUrl);
+    setTargetCoordinates(selected.coordinates);
+    setCurrentScreen('result');
   };
 
   const sendChatMessage = (text: string) => {
@@ -117,13 +133,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
 
       setChatMessages((prev) => [...prev, agentMsg]);
-    }, 900);
+    }, 800);
   };
 
   // Automated step-by-step processing simulation
-  const startAnalysisFlow = (queryText?: string) => {
+  const startAnalysisFlow = (queryText?: string, imageUrl?: string) => {
     if (queryText) {
       sendChatMessage(queryText);
+    }
+    if (imageUrl) {
+      setCurrentImage(imageUrl);
     }
     setIsProcessing(true);
     setCurrentScreen('processing');
@@ -147,7 +166,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             : s
         )
       );
-    }, 700);
+    }, 600);
 
     // Step 2 done
     setTimeout(() => {
@@ -160,7 +179,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             : s
         )
       );
-    }, 1500);
+    }, 1300);
 
     // Step 3 done
     setTimeout(() => {
@@ -173,7 +192,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             : s
         )
       );
-    }, 2400);
+    }, 2000);
 
     // Step 4 done and switch to results
     setTimeout(() => {
@@ -186,7 +205,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       );
       setIsProcessing(false);
       setCurrentScreen('result');
-    }, 3200);
+    }, 2600);
   };
 
   return (
@@ -203,11 +222,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         selectedParameters,
         toggleParameter,
         session,
+        setSession,
         traceSteps,
         chatMessages,
         sendChatMessage,
         startAnalysisFlow,
         isProcessing,
+        historySessions,
+        selectHistorySession,
+        currentImage,
+        setCurrentImage,
       }}
     >
       {children}

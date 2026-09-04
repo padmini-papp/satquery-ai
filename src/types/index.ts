@@ -1,4 +1,4 @@
-export type ScreenType = 'landing' | 'console' | 'processing' | 'result' | 'temporal';
+export type ScreenType = 'landing' | 'console' | 'processing' | 'result' | 'temporal' | 'history';
 
 export type ThemeMode = 'navy' | 'midnight';
 
@@ -55,6 +55,8 @@ export interface AnalysisSession {
   targetTitle: string;
   coordinates: string;
   confidenceScore: number;
+  sensor: string;
+  date: string;
   executiveSummary: string;
   vehicleClusterAlert: string;
   thermalAnomalyAlert: string;

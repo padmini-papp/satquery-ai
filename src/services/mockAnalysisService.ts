@@ -21,9 +21,9 @@ export const DEFAULT_TELEMETRY: TelemetryData = {
   resolution: '0.5m GSD',
   cloudCover: '12%',
   coordinates: {
-    lat: 34.0522,
-    lng: -118.2437,
-    formatted: "34°05'N 118°15'W",
+    lat: 26.2341,
+    lng: 54.3412,
+    formatted: "26.2341° N, 54.3412° E",
   },
 };
 
@@ -64,24 +64,90 @@ export const DEFAULT_TRACE_STEPS: TraceStep[] = [
   },
 ];
 
-export const DEFAULT_SESSION: AnalysisSession = {
-  id: 'SES-0842-X',
-  targetId: 'ANL-8492-X',
-  targetTitle: 'Sector 7G Activity Analysis',
-  coordinates: "34°05'N 118°15'W",
-  confidenceScore: 94,
-  executiveSummary:
-    'Temporal analysis indicates significant structural alterations in Sector 7G over the last 72 hours. Neural network detected pattern anomalies consistent with rapid deployment of temporary logistics infrastructure.',
-  vehicleClusterAlert: 'Increased heavy transport presence identified at coordinates alpha-tango.',
-  thermalAnomalyAlert: 'Elevated thermal signatures in secondary processing facility. Potential active operations.',
-  verification: [
-    { id: 'v1', label: 'Structural Geometry', status: 'MATCH' },
-    { id: 'v2', label: 'Spectral Signature', status: 'MATCH' },
-    { id: 'v3', label: 'SAR Coherence', status: 'PENDING' },
-  ],
-  imageryUrl: STITCH_IMAGES.sector7gPort,
-  traceSteps: DEFAULT_TRACE_STEPS,
-};
+export const MOCK_HISTORY_SESSIONS: AnalysisSession[] = [
+  {
+    id: 'SES-0842-X',
+    targetId: 'ANL-8492-X',
+    targetTitle: 'Sector 7G Activity Analysis',
+    coordinates: "34°05'N 118°15'W",
+    confidenceScore: 94,
+    sensor: 'SAR-X Band',
+    date: '2024-03-14 08:30 UTC',
+    executiveSummary:
+      'Temporal analysis indicates significant structural alterations in Sector 7G over the last 72 hours. Neural network detected pattern anomalies consistent with rapid deployment of temporary logistics infrastructure.',
+    vehicleClusterAlert: 'Increased heavy transport presence identified at coordinates alpha-tango.',
+    thermalAnomalyAlert: 'Elevated thermal signatures in secondary processing facility. Potential active operations.',
+    verification: [
+      { id: 'v1', label: 'Structural Geometry', status: 'MATCH' },
+      { id: 'v2', label: 'Spectral Signature', status: 'MATCH' },
+      { id: 'v3', label: 'SAR Coherence', status: 'PENDING' },
+    ],
+    imageryUrl: STITCH_IMAGES.sector7gPort,
+    traceSteps: DEFAULT_TRACE_STEPS,
+  },
+  {
+    id: 'SES-0771-M',
+    targetId: 'ANL-7721-M',
+    targetTitle: 'Strait of Hormuz Maritime Patrol',
+    coordinates: "26.2341° N, 54.3412° E",
+    confidenceScore: 98,
+    sensor: 'Optical Multi-Spectral',
+    date: '2024-03-12 14:15 UTC',
+    executiveSummary:
+      'Surveillance sweep detected 3 commercial supertankers and 2 unidentified support vessels deviating from established maritime transit channels. Neural vector matching indicates 98% confidence on class recognition.',
+    vehicleClusterAlert: 'Convoy formation detected entering northern territorial perimeter.',
+    thermalAnomalyAlert: 'Normal engine heat dispersion. No hostile thermal bloom.',
+    verification: [
+      { id: 'v1', label: 'Structural Geometry', status: 'MATCH' },
+      { id: 'v2', label: 'Spectral Signature', status: 'MATCH' },
+      { id: 'v3', label: 'SAR Coherence', status: 'MATCH' },
+    ],
+    imageryUrl: STITCH_IMAGES.hormuzStrait,
+    traceSteps: DEFAULT_TRACE_STEPS,
+  },
+  {
+    id: 'SES-0620-R',
+    targetId: 'ANL-6210-R',
+    targetTitle: 'Port of Rotterdam Logistics Flow',
+    coordinates: "51.9493° N, 4.1481° E",
+    confidenceScore: 92,
+    sensor: 'Sentinel-2 (10m GSD)',
+    date: '2024-03-10 11:00 UTC',
+    executiveSummary:
+      'Container stacking turnover shows a 24.5% surge over baseline weekly averages. Bi-temporal differential highlights 14.2 ha of relocated freight containers and cranes in quay zone 4.',
+    vehicleClusterAlert: 'Automated Guided Vehicle (AGV) traffic optimal at 42 units/hr.',
+    thermalAnomalyAlert: 'Cold storage unit 12 running at expected cryogenic threshold.',
+    verification: [
+      { id: 'v1', label: 'Structural Geometry', status: 'MATCH' },
+      { id: 'v2', label: 'Spectral Signature', status: 'MATCH' },
+      { id: 'v3', label: 'SAR Coherence', status: 'PENDING' },
+    ],
+    imageryUrl: STITCH_IMAGES.rotterdamPort,
+    traceSteps: DEFAULT_TRACE_STEPS,
+  },
+  {
+    id: 'SES-0550-B',
+    targetId: 'ANL-5509-B',
+    targetTitle: 'Western Amazon Deforestation Delta',
+    coordinates: "03°12'S 60°02'W",
+    confidenceScore: 96,
+    sensor: 'Landsat-9 / Sentinel-1 SAR',
+    date: '2024-03-08 16:45 UTC',
+    executiveSummary:
+      'Significant canopy loss identified along logging spur road. Estimated 3.1 ha tree clearance detected in last 14 days with 96% high confidence.',
+    vehicleClusterAlert: 'Heavy machinery signature located at road terminus.',
+    thermalAnomalyAlert: 'Brush burning hot spots observed via SWIR bands.',
+    verification: [
+      { id: 'v1', label: 'Structural Geometry', status: 'MATCH' },
+      { id: 'v2', label: 'Spectral Signature', status: 'MATCH' },
+      { id: 'v3', label: 'SAR Coherence', status: 'MATCH' },
+    ],
+    imageryUrl: STITCH_IMAGES.urbanDeforestation,
+    traceSteps: DEFAULT_TRACE_STEPS,
+  },
+];
+
+export const DEFAULT_SESSION: AnalysisSession = MOCK_HISTORY_SESSIONS[0];
 
 export const INITIAL_CHAT_MESSAGES: QueryMessage[] = [
   {

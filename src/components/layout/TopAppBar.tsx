@@ -8,11 +8,11 @@ export const TopAppBar: React.FC = () => {
   const navItems: { label: string; screen: ScreenType }[] = [
     { label: 'Workspace', screen: 'console' },
     { label: 'Temporal Analysis', screen: 'temporal' },
-    { label: 'Processing History', screen: 'result' },
+    { label: 'Processing History', screen: 'history' },
   ];
 
   return (
-    <header className="fixed top-0 left-0 w-full z-50 bg-surface/85 backdrop-blur-xl border-b border-outline-variant/30 flex justify-between items-center px-4 md:px-margin-desktop h-16 transition-colors duration-200">
+    <header className="fixed top-0 left-0 w-full z-50 bg-surface/90 backdrop-blur-xl border-b border-outline-variant/30 flex justify-between items-center px-4 md:px-margin-desktop h-16 transition-colors duration-200">
       {/* Brand Identity */}
       <div
         className="flex items-center gap-sm cursor-pointer group"
@@ -48,6 +48,16 @@ export const TopAppBar: React.FC = () => {
             </button>
           );
         })}
+
+        {/* Dynamic tab for Active Analysis Result if user is currently viewing results */}
+        {currentScreen === 'result' && (
+          <button
+            onClick={() => setCurrentScreen('result')}
+            className="font-mono-label text-mono-label px-3 py-1.5 rounded transition-all duration-150 text-tertiary font-bold bg-tertiary/10 border-b border-tertiary shadow-[0_0_8px_rgba(104,245,184,0.2)]"
+          >
+            Analysis Results
+          </button>
+        )}
       </nav>
 
       {/* Status Indicators & Theme Control */}
