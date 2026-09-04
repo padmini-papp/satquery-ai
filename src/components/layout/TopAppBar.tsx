@@ -77,14 +77,28 @@ export const TopAppBar: React.FC = () => {
           </span>
         </button>
 
-        {/* Pulsing System Online Indicator */}
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded-full border border-primary/30 bg-primary/5">
+        {/* Pulsing System / API Online Indicator */}
+        <div
+          className={`flex items-center gap-2 px-2.5 py-1 rounded-full border transition-colors ${
+            backendConnected
+              ? 'border-tertiary/40 bg-tertiary/10 text-tertiary'
+              : 'border-primary/30 bg-primary/5 text-primary'
+          }`}
+        >
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            <span
+              className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                backendConnected ? 'bg-tertiary' : 'bg-primary'
+              }`}
+            ></span>
+            <span
+              className={`relative inline-flex rounded-full h-2 w-2 ${
+                backendConnected ? 'bg-tertiary' : 'bg-primary'
+              }`}
+            ></span>
           </span>
-          <span className="font-mono-label text-mono-label text-primary tracking-wider">
-            {backendConnected ? 'BACKEND ONLINE' : 'SYSTEM ONLINE'}
+          <span className="font-mono-label text-mono-label tracking-wider font-semibold">
+            {backendConnected ? 'API ONLINE (8000)' : 'CONNECTING...'}
           </span>
         </div>
       </div>

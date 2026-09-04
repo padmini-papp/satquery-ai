@@ -1,103 +1,195 @@
-// API Service for SatQuery AI Model Gateway
+// API Service for SatQuery AI Localhost Backend (http://localhost:8000)
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://denture-snugly-ending.ngrok-free.dev';
-
-// All model slugs available on the gateway
-export const MODEL_SLUGS = ['geochat', 'changechat', 'prithvi', 'sar_fusion', 'bigearthnet'] as const;
-export type ModelSlug = typeof MODEL_SLUGS[number];
-
-// Common headers for all requests (ngrok interstitial bypass)
-const HEADERS: Record<string, string> = {
-  'ngrok-skip-browser-warning': 'true',
-};
-
-// --- Response Types ---
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 export interface HealthResponse {
   status: string;
-  models: string[];
+  service?: string;
+  mode?: string;
+  llm_provider?: string;
+  models?: string[];
 }
 
-export interface ModelHealthResponse {
+export interface ModelCapabilities {
+  name: string;
+  type: string;
+  tasks: string[];
+  supported_modalities: string[];
+  requires_images: number;
+  description: string;
+}
+
+export interface ModelInfo {
+  name: string;
   status: string;
-  model: string;
-  gpu?: string;
+  endpoint: string | null;
+  capabilities: ModelCapabilities;
+  healthy: boolean;
+  reason: string | null;
 }
 
-export interface PredictResultData {
-  response_text: string;
-  grounded_boxes: number[][];
+export interface SubmitAnalysisResponse {
+  job_id: string;
+  status: string;
+  message: string;
+  image_count?: number;
+}
+
+export interface EvidenceItem {
+  id: string;
+  type: string;
+  description: string;
+  claim: string;
   confidence: number;
-  identified_categories: string[];
+  bbox?: number[];
+  metadata?: Record<string, any>;
 }
 
-export interface PredictResponse {
-  result: PredictResultData;
-  artifacts: any[];
+export interface ExecutionSummary {
+  task: string;
+  models: string[];
+  tools: string[];
+  parameters: Record<string, any>;
+  processing_time_ms: number;
 }
 
-export interface PredictRequest {
-  image_base64?: string;
-  query: string;
+export interface JobResultResponse {
+  job_id: string;
+  status: 'queued' | 'processing' | 'completed' | 'failed';
+  error?: string | null;
+  result?: {
+    job_id: string;
+    answer: string;
+    task?: string;
+    confidence?: {
+      score: number;
+      level?: string;
+      label?: string;
+      reasoning?: string;
+    };
+    evidence?: EvidenceItem[];
+    execution_summary?: ExecutionSummary;
+    metadata?: Record<string, any>;
+  } | null;
+}
+
+export interface JobEvidenceResponse {
+  job_id: string;
+  evidence: EvidenceItem[];
+}
+
+export interface JobTraceItem {
+  step: number;
+  event: string;
+  status: string;
   task?: string;
-  parameters?: Record<string, any>;
+  model?: string | null;
+  duration_ms?: number;
+  details?: Record<string, any>;
 }
 
-// --- API Functions ---
+export interface JobTraceResponse {
+  job_id: string;
+  trace: JobTraceItem[];
+}
 
-// Gateway health check
+// --- 1. Health Check (GET /health) ---
 export async function checkHealth(): Promise<HealthResponse> {
-  const res = await fetch(`${API_BASE}/health`, { headers: HEADERS });
+  const res = await fetch(`${API_BASE}/health`);
   if (!res.ok) throw new Error(`Health check failed: ${res.status}`);
   return res.json();
 }
 
-// Per-model health check
-export async function checkModelHealth(model: string): Promise<ModelHealthResponse> {
-  const res = await fetch(`${API_BASE}/${model}/v1/health`, { headers: HEADERS });
-  if (!res.ok) throw new Error(`Model health check failed for ${model}: ${res.status}`);
+// --- 2. List Models (GET /api/v1/models) ---
+export async function getModels(): Promise<ModelInfo[]> {
+  const res = await fetch(`${API_BASE}/api/v1/models`);
+  if (!res.ok) throw new Error(`Get models failed: ${res.status}`);
   return res.json();
 }
 
-// List available models from the gateway health endpoint
-export async function listModels(): Promise<string[]> {
-  const health = await checkHealth();
-  return health.models || [];
-}
+// --- 3. Submit Analysis Job (POST /api/v1/analyze) ---
+export async function submitAnalysis(
+  imageFile?: File | Blob | null,
+  query: string = '',
+  metadata?: Record<string, any>
+): Promise<SubmitAnalysisResponse> {
+  const formData = new FormData();
+  formData.append('query', query);
 
-// Run prediction on a specific model (synchronous — returns result directly)
-export async function predictWithModel(
-  model: string,
-  imageBase64: string,
-  query: string,
-  task: string = 'single_image_vqa',
-  parameters: Record<string, any> = {}
-): Promise<PredictResponse> {
-  const body: PredictRequest = {
-    image_base64: imageBase64,
-    query,
-    task,
-    parameters,
-  };
+  if (imageFile) {
+    formData.append('images', imageFile, (imageFile as File).name || 'satellite_image.jpg');
+  }
 
-  const res = await fetch(`${API_BASE}/${model}/v1/predict`, {
+  if (metadata) {
+    formData.append('metadata', JSON.stringify(metadata));
+  }
+
+  const res = await fetch(`${API_BASE}/api/v1/analyze`, {
     method: 'POST',
-    headers: {
-      ...HEADERS,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
+    body: formData,
   });
 
   if (!res.ok) {
     const errText = await res.text();
-    throw new Error(`Predict failed for ${model}: ${errText}`);
+    throw new Error(`Submit analysis failed (${res.status}): ${errText}`);
   }
 
   return res.json();
 }
 
-// Convert a File to a base64 string (without the data URI prefix)
+// --- 4. Submit Change Analysis Job (POST /api/v1/analyze/change) ---
+export async function submitChangeAnalysis(
+  imageBefore: File | Blob,
+  imageAfter: File | Blob,
+  query: string = ''
+): Promise<SubmitAnalysisResponse> {
+  const formData = new FormData();
+  formData.append('query', query);
+  formData.append('image_before', imageBefore, (imageBefore as File).name || 'before.jpg');
+  formData.append('image_after', imageAfter, (imageAfter as File).name || 'after.jpg');
+
+  const res = await fetch(`${API_BASE}/api/v1/analyze/change`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Submit change analysis failed (${res.status}): ${errText}`);
+  }
+
+  return res.json();
+}
+
+// --- 5. Poll Job Status (GET /api/v1/jobs/{job_id}) ---
+export async function getJobResult(jobId: string): Promise<JobResultResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}`);
+  if (!res.ok) throw new Error(`Get job result failed (${res.status})`);
+  return res.json();
+}
+
+// --- 6. Fetch Job Evidence (GET /api/v1/jobs/{job_id}/evidence) ---
+export async function getJobEvidence(jobId: string): Promise<JobEvidenceResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/evidence`);
+  if (!res.ok) throw new Error(`Get job evidence failed (${res.status})`);
+  return res.json();
+}
+
+// --- 7. Fetch Job Execution Trace (GET /api/v1/jobs/{job_id}/trace) ---
+export async function getJobTrace(jobId: string): Promise<JobTraceResponse> {
+  const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/trace`);
+  if (!res.ok) throw new Error(`Get job trace failed (${res.status})`);
+  return res.json();
+}
+
+// --- Helper: Fetch Image URL as Blob ---
+export async function fetchImageUrlAsBlob(url: string): Promise<Blob> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to fetch image URL as blob: ${res.status}`);
+  return res.blob();
+}
+
+// --- Helpers: Base64 Conversions ---
 export function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -111,15 +203,12 @@ export function fileToBase64(file: File): Promise<string> {
   });
 }
 
-// Convert an image URL or Blob URL to a base64 string
 export async function imageUrlToBase64(url: string): Promise<string> {
   if (url.startsWith('data:image')) {
     return url.split(',')[1] || '';
   }
   try {
-    const res = await fetch(url, { headers: HEADERS });
-    if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
-    const blob = await res.blob();
+    const blob = await fetchImageUrlAsBlob(url);
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => {
@@ -130,28 +219,7 @@ export async function imageUrlToBase64(url: string): Promise<string> {
       reader.onerror = reject;
       reader.readAsDataURL(blob);
     });
-  } catch (e) {
-    console.warn('Could not convert image URL to base64 directly, returning empty string fallback:', e);
+  } catch {
     return '';
   }
 }
-
-// Select the best model for a given query
-export function selectModelForQuery(query: string): ModelSlug {
-  const lower = query.toLowerCase();
-  if (lower.includes('change') || lower.includes('temporal') || lower.includes('before') || lower.includes('after')) {
-    return 'changechat';
-  }
-  if (lower.includes('sar') || lower.includes('radar') || lower.includes('fusion')) {
-    return 'sar_fusion';
-  }
-  if (lower.includes('classify') || lower.includes('land cover') || lower.includes('land use') || lower.includes('category')) {
-    return 'bigearthnet';
-  }
-  if (lower.includes('flood') || lower.includes('wildfire') || lower.includes('disaster') || lower.includes('climate')) {
-    return 'prithvi';
-  }
-  // Default: GeoChat for general VQA
-  return 'geochat';
-}
-
