@@ -396,7 +396,7 @@ export const AnalysisConsole: React.FC = () => {
             </div>
 
             {/* Chat Dialog Stream */}
-            <div className="bg-surface-container-lowest/90 border border-outline-variant/30 rounded p-2.5 max-h-56 overflow-y-auto space-y-2 mb-3 text-xs font-body-sm">
+            <div className="bg-surface-container-lowest/90 border border-outline-variant/30 rounded p-2.5 max-h-64 overflow-y-auto space-y-3 mb-3 text-xs font-body-sm">
               {chatMessages.length > 0 ? (
                 chatMessages.map((msg) => (
                   <div key={msg.id} className="space-y-1">
@@ -407,15 +407,38 @@ export const AnalysisConsole: React.FC = () => {
                       <span className="font-bold text-primary">{msg.sender === 'user' ? 'ANALYST' : 'SATQUERY AGENT'}</span>
                       <span className="text-[9px] opacity-60 ml-auto">{msg.timestamp}</span>
                     </div>
-                    <div
-                      className={`p-2.5 rounded text-xs leading-relaxed whitespace-pre-wrap ${
-                        msg.sender === 'user'
-                          ? 'bg-surface-variant/40 text-on-surface-variant'
-                          : 'bg-primary/10 border border-primary/30 text-on-surface font-mono-data'
-                      }`}
-                    >
-                      {msg.text}
-                    </div>
+
+                    {msg.sender === 'agent' ? (
+                      <div className="space-y-1.5">
+                        {/* 1-Line Simplified Summary Badge */}
+                        <div className="p-2 rounded bg-tertiary/15 border border-tertiary/40 flex items-start gap-1.5 text-on-surface">
+                          <span className="material-symbols-outlined text-tertiary text-[14px] shrink-0 mt-0.5">lightbulb</span>
+                          <div>
+                            <span className="font-mono-label text-[9px] text-tertiary font-bold block uppercase">
+                              SIMPLIFIED (SIMPLE ENGLISH)
+                            </span>
+                            <p className="font-body-sm text-[11px] font-semibold text-on-surface leading-snug">
+                              "{msg.text.split('\n')[0].replace(/\*\*/g, '')}"
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Raw Unedited Response Code Container */}
+                        <details className="group">
+                          <summary className="font-mono-label text-[10px] text-primary cursor-pointer hover:underline flex items-center gap-1">
+                            <span className="material-symbols-outlined text-[12px]">code</span>
+                            <span>View Raw Unedited Response</span>
+                          </summary>
+                          <pre className="mt-1 bg-black/80 p-2 rounded border border-outline-variant/30 font-mono-data text-[10px] text-primary/90 whitespace-pre-wrap leading-relaxed max-h-36 overflow-y-auto">
+                            {msg.text}
+                          </pre>
+                        </details>
+                      </div>
+                    ) : (
+                      <div className="p-2.5 rounded text-xs leading-relaxed bg-surface-variant/40 text-on-surface-variant">
+                        {msg.text}
+                      </div>
+                    )}
                   </div>
                 ))
               ) : (

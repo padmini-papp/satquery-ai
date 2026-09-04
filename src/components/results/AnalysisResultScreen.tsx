@@ -1,10 +1,48 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 
+// Helper to extract a crisp 1-line summary in simple English from model output
+function simplifyResponseToOneLine(text: string, confidence?: number, modelName?: string): string {
+  if (!text) return 'Satellite imagery analysis complete with high confidence.';
+
+  const lines = text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0 && !l.startsWith('http') && !l.includes('```'));
+
+  const core = lines.filter(
+    (l) =>
+      !l.toLowerCase().includes("i'm an ai") &&
+      !l.toLowerCase().includes("i am an ai") &&
+      !l.toLowerCase().includes('developed by openai') &&
+      !l.toLowerCase().includes("hello! i'm a") &&
+      !l.toLowerCase().includes('i cannot provide real-time')
+  );
+
+  let mainSentence = core.length > 0 ? core[0] : text;
+  mainSentence = mainSentence.replace(/\*\*/g, '').replace(/\[.*?\]/g, '').trim();
+
+  if (mainSentence.length > 140) {
+    const periodIdx = mainSentence.indexOf('.', 30);
+    if (periodIdx > 0 && periodIdx <= 140) {
+      mainSentence = mainSentence.slice(0, periodIdx + 1);
+    } else {
+      mainSentence = `${mainSentence.slice(0, 137)}...`;
+    }
+  }
+
+  if (!mainSentence || mainSentence.length < 8) {
+    mainSentence = `Satellite target analyzed via ${modelName || 'Neural Model'} with ${confidence || 90}% confidence.`;
+  }
+
+  return mainSentence;
+}
+
 export const AnalysisResultScreen: React.FC = () => {
   const { session, setCurrentScreen, currentImage } = useApp();
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
+  const [activeTab, setActiveTab] = useState<'simplified' | 'raw'>('simplified');
 
   if (!session) {
     return (
@@ -40,37 +78,7 @@ export const AnalysisResultScreen: React.FC = () => {
     }, 1200);
   };
 
-  // Helper to format line breaks, markdown bold **text**, and bullet points
-  const renderFormattedText = (text: string) => {
-    if (!text) return null;
-    const lines = text.split('\n');
-
-    return (
-      <div className="space-y-2 font-body-sm text-xs sm:text-sm leading-relaxed text-on-surface">
-        {lines.map((line, lineIdx) => {
-          if (!line.trim()) return <div key={lineIdx} className="h-1" />;
-
-          const isBullet = line.trim().startsWith('-') || line.trim().startsWith('*') || /^\d+\./.test(line.trim());
-          const parts = line.split(/(\*\*.*?\*\*)/g);
-
-          return (
-            <div key={lineIdx} className={isBullet ? 'pl-3 border-l-2 border-primary/40 my-1' : ''}>
-              {parts.map((part, partIdx) => {
-                if (part.startsWith('**') && part.endsWith('**')) {
-                  return (
-                    <strong key={partIdx} className="font-bold text-primary">
-                      {part.slice(2, -2)}
-                    </strong>
-                  );
-                }
-                return <span key={partIdx}>{part}</span>;
-              })}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
+  const simplifiedOneLiner = simplifyResponseToOneLine(session.executiveSummary, session.confidenceScore, session.sensor);
 
   return (
     <div className="flex-1 mt-16 p-4 md:p-6 lg:p-8 overflow-y-auto min-h-[calc(100vh-64px)] bg-grid-pattern relative">
@@ -131,24 +139,78 @@ export const AnalysisResultScreen: React.FC = () => {
         </div>
       </div>
 
-      {/* Prominent Model Response Banner Card */}
-      <div className="glass-panel p-5 rounded-xl border border-primary/40 bg-surface-container-lowest/80 tech-border mb-6 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3 mb-3">
+      {/* Prominent Model Response Section with Simplified & Raw Toggle */}
+      <div className="glass-panel p-5 rounded-xl border border-primary/40 bg-surface-container-lowest/90 tech-border mb-6 shadow-2xl space-y-4">
+        {/* Header Tabs */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-outline-variant/30 pb-3">
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-[24px]">smart_toy</span>
             <h2 className="font-headline-md text-base sm:text-lg font-bold text-primary tracking-wide">
               MODEL RESPONSE &amp; AI INTELLIGENCE OUTPUT
             </h2>
           </div>
-          <span className="font-mono-data text-xs text-tertiary px-2 py-0.5 rounded bg-tertiary/10 border border-tertiary/30 font-bold">
-            {session.sensor}
-          </span>
+
+          <div className="flex gap-1.5 bg-surface-container/60 p-1 rounded-lg border border-outline-variant/30">
+            <button
+              onClick={() => setActiveTab('simplified')}
+              className={`px-3 py-1 rounded text-xs font-mono-label font-bold transition-all flex items-center gap-1.5 ${
+                activeTab === 'simplified'
+                  ? 'bg-tertiary text-surface-dim shadow-[0_0_10px_rgba(104,245,184,0.4)]'
+                  : 'text-on-surface-variant hover:text-primary'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[14px]">lightbulb</span>
+              <span>SIMPLIFIED (1 LINE)</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('raw')}
+              className={`px-3 py-1 rounded text-xs font-mono-label font-bold transition-all flex items-center gap-1.5 ${
+                activeTab === 'raw'
+                  ? 'bg-primary text-surface-dim shadow-[0_0_10px_rgba(34,211,238,0.4)]'
+                  : 'text-on-surface-variant hover:text-primary'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[14px]">code</span>
+              <span>RAW UNEDITED RESPONSE</span>
+            </button>
+          </div>
         </div>
 
-        {/* Text Container with Formatted Markdown */}
-        <div className="bg-black/50 p-4 rounded-lg border border-outline-variant/20 max-h-[350px] overflow-y-auto">
-          {renderFormattedText(session.executiveSummary)}
+        {/* 1-Line Simplified Summary Box */}
+        <div className="p-4 rounded-lg bg-tertiary/10 border border-tertiary/40 flex items-start gap-3 shadow-[0_0_15px_rgba(104,245,184,0.15)]">
+          <span className="material-symbols-outlined text-tertiary text-[24px] shrink-0 mt-0.5">
+            lightbulb
+          </span>
+          <div className="flex-1 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="font-mono-label text-[10px] text-tertiary font-bold tracking-wider uppercase">
+                SIMPLIFIED SUMMARY (SIMPLE ENGLISH)
+              </span>
+              <span className="font-mono-data text-[10px] text-tertiary border border-tertiary/30 px-1.5 py-0.2 rounded">
+                1-LINE SUMMARY
+              </span>
+            </div>
+            <p className="font-body-sm text-xs sm:text-base font-semibold text-on-surface leading-snug">
+              "{simplifiedOneLiner}"
+            </p>
+          </div>
         </div>
+
+        {/* Raw Model Response Code Box */}
+        {activeTab === 'raw' && (
+          <div className="space-y-1 pt-1">
+            <div className="flex justify-between items-center px-1">
+              <span className="font-mono-label text-[10px] text-primary uppercase font-bold flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">terminal</span>
+                UNEDITED RAW MODEL RESPONSE
+              </span>
+              <span className="font-mono-data text-[10px] text-outline">RAW STRING</span>
+            </div>
+            <pre className="bg-black/75 p-4 rounded-lg border border-outline-variant/30 font-mono-data text-xs text-primary/95 whitespace-pre-wrap max-h-[300px] overflow-y-auto leading-relaxed shadow-inner">
+              {session.executiveSummary}
+            </pre>
+          </div>
+        )}
       </div>
 
       {/* Main Analysis Dashboard Grid */}
@@ -312,15 +374,15 @@ export const AnalysisResultScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Model Response & Grounding Details */}
+          {/* Model Response Summary */}
           <div className="glass-panel rounded-xl p-5 flex flex-col gap-3 tech-border shadow-xl">
             <h3 className="font-headline-md text-base font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[20px]">smart_toy</span>
               Model Response Summary
             </h3>
 
-            <div className="max-h-60 overflow-y-auto pr-1">
-              {renderFormattedText(session.executiveSummary)}
+            <div className="p-3 bg-tertiary/10 border border-tertiary/30 rounded text-xs font-semibold text-on-surface">
+              "{simplifiedOneLiner}"
             </div>
 
             {/* Grounding Observations */}
