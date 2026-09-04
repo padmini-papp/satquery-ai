@@ -396,22 +396,22 @@ export const AnalysisConsole: React.FC = () => {
             </div>
 
             {/* Chat Dialog Stream */}
-            <div className="bg-surface-container-lowest/90 border border-outline-variant/30 rounded p-2.5 max-h-36 overflow-y-auto space-y-2 mb-3 text-xs font-body-sm">
+            <div className="bg-surface-container-lowest/90 border border-outline-variant/30 rounded p-2.5 max-h-56 overflow-y-auto space-y-2 mb-3 text-xs font-body-sm">
               {chatMessages.length > 0 ? (
-                chatMessages.slice(-2).map((msg) => (
+                chatMessages.map((msg) => (
                   <div key={msg.id} className="space-y-1">
                     <div className="flex items-center gap-1 font-mono-label text-[10px] text-on-surface-variant">
                       <span className="material-symbols-outlined text-[12px]">
                         {msg.sender === 'user' ? 'person' : 'smart_toy'}
                       </span>
-                      <span>{msg.sender === 'user' ? 'ANALYST' : 'SATQUERY AGENT'}</span>
+                      <span className="font-bold text-primary">{msg.sender === 'user' ? 'ANALYST' : 'SATQUERY AGENT'}</span>
                       <span className="text-[9px] opacity-60 ml-auto">{msg.timestamp}</span>
                     </div>
                     <div
-                      className={`p-2 rounded ${
+                      className={`p-2.5 rounded text-xs leading-relaxed whitespace-pre-wrap ${
                         msg.sender === 'user'
                           ? 'bg-surface-variant/40 text-on-surface-variant'
-                          : 'bg-primary/10 border border-primary/20 text-on-surface'
+                          : 'bg-primary/10 border border-primary/30 text-on-surface font-mono-data'
                       }`}
                     >
                       {msg.text}

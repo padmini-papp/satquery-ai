@@ -40,10 +40,42 @@ export const AnalysisResultScreen: React.FC = () => {
     }, 1200);
   };
 
+  // Helper to format line breaks, markdown bold **text**, and bullet points
+  const renderFormattedText = (text: string) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+
+    return (
+      <div className="space-y-2 font-body-sm text-xs sm:text-sm leading-relaxed text-on-surface">
+        {lines.map((line, lineIdx) => {
+          if (!line.trim()) return <div key={lineIdx} className="h-1" />;
+
+          const isBullet = line.trim().startsWith('-') || line.trim().startsWith('*') || /^\d+\./.test(line.trim());
+          const parts = line.split(/(\*\*.*?\*\*)/g);
+
+          return (
+            <div key={lineIdx} className={isBullet ? 'pl-3 border-l-2 border-primary/40 my-1' : ''}>
+              {parts.map((part, partIdx) => {
+                if (part.startsWith('**') && part.endsWith('**')) {
+                  return (
+                    <strong key={partIdx} className="font-bold text-primary">
+                      {part.slice(2, -2)}
+                    </strong>
+                  );
+                }
+                return <span key={partIdx}>{part}</span>;
+              })}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="flex-1 mt-16 p-4 md:p-6 lg:p-8 overflow-y-auto min-h-[calc(100vh-64px)] bg-grid-pattern relative">
       {/* Top Header Section */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-4 gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
             <span className="font-mono-label text-[11px] text-tertiary border border-tertiary/30 bg-tertiary/10 px-2 py-0.5 rounded">
@@ -60,7 +92,6 @@ export const AnalysisResultScreen: React.FC = () => {
 
         {/* Action Buttons */}
         <div className="flex flex-wrap items-center gap-2.5">
-          {/* Primary Action: Launch Temporal Analysis */}
           <button
             onClick={() => setCurrentScreen('temporal')}
             className="flex items-center gap-1.5 px-4 py-2 bg-primary-container text-surface-dim rounded font-mono-label text-xs font-bold hover:bg-primary-fixed-dim shadow-[0_0_16px_rgba(34,211,238,0.4)] transition-all"
@@ -100,31 +131,47 @@ export const AnalysisResultScreen: React.FC = () => {
         </div>
       </div>
 
+      {/* Prominent Model Response Banner Card */}
+      <div className="glass-panel p-5 rounded-xl border border-primary/40 bg-surface-container-lowest/80 tech-border mb-6 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-outline-variant/30 pb-3 mb-3">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-[24px]">smart_toy</span>
+            <h2 className="font-headline-md text-base sm:text-lg font-bold text-primary tracking-wide">
+              MODEL RESPONSE &amp; AI INTELLIGENCE OUTPUT
+            </h2>
+          </div>
+          <span className="font-mono-data text-xs text-tertiary px-2 py-0.5 rounded bg-tertiary/10 border border-tertiary/30 font-bold">
+            {session.sensor}
+          </span>
+        </div>
+
+        {/* Text Container with Formatted Markdown */}
+        <div className="bg-black/50 p-4 rounded-lg border border-outline-variant/20 max-h-[350px] overflow-y-auto">
+          {renderFormattedText(session.executiveSummary)}
+        </div>
+      </div>
+
       {/* Main Analysis Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Imagery & Telemetry Strip (8 cols on desktop) */}
         <div className="lg:col-span-8 flex flex-col gap-4">
           {/* Main Analyzed Image Viewer */}
           <div className="glass-panel rounded-xl relative overflow-hidden group tech-border min-h-[420px] lg:min-h-[500px] flex items-center justify-center bg-black">
-            {/* 4 Corner L-Brackets */}
             <div className="corner-tl"></div>
             <div className="corner-tr"></div>
             <div className="corner-bl"></div>
             <div className="corner-br"></div>
 
-            {/* Satellite Background */}
             <div
               className="absolute inset-0 bg-cover bg-center opacity-90 transition-transform duration-500 group-hover:scale-[1.02]"
               style={{ backgroundImage: `url('${session.imageryUrl || currentImage}')` }}
             />
 
-            {/* Grid Overlay */}
             <div className="absolute inset-0 bg-grid-dense pointer-events-none opacity-30"></div>
 
-            {/* Top HUD Overlay Controls */}
             <div className="absolute top-3 left-3 right-3 flex justify-between z-10 pointer-events-none">
               <div className="bg-surface/85 backdrop-blur-md px-3 py-1 border border-outline-variant/40 rounded pointer-events-auto shadow-md">
-                <span className="font-mono-label text-xs text-primary">LIVE MODEL INFERENCE</span>
+                <span className="font-mono-label text-xs text-primary font-bold">LIVE MODEL INFERENCE</span>
               </div>
               <div className="flex gap-1.5 pointer-events-auto">
                 <button
@@ -137,7 +184,6 @@ export const AnalysisResultScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* Targeting Reticle & Crosshairs */}
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
               <div className="w-full h-[1px] bg-primary/20"></div>
               <div className="h-full w-[1px] bg-primary/20 absolute"></div>
@@ -180,7 +226,6 @@ export const AnalysisResultScreen: React.FC = () => {
               </div>
             )}
 
-            {/* Bottom Coordinate Readout */}
             <div className="absolute bottom-3 left-3 bg-surface/85 backdrop-blur-md px-3 py-1 rounded border border-outline-variant/40 font-mono-data text-xs text-secondary pointer-events-none">
               {session.coordinates}
             </div>
@@ -214,7 +259,7 @@ export const AnalysisResultScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Optional Execution Summary Metrics */}
+          {/* Execution Summary Metrics */}
           {session.executionSummary && (
             <div className="glass-panel rounded-xl p-4 tech-border shadow-xl space-y-2 font-mono-data text-xs">
               <div className="font-mono-label text-xs text-primary uppercase tracking-wider font-bold">
@@ -236,7 +281,7 @@ export const AnalysisResultScreen: React.FC = () => {
           )}
         </div>
 
-        {/* Right Column: AI Confidence, Executive Summary, Verification (4 cols) */}
+        {/* Right Column: AI Confidence Rating & Grounding (4 cols) */}
         <div className="lg:col-span-4 flex flex-col gap-4">
           {/* AI Confidence Score Card */}
           <div className="glass-panel rounded-xl p-5 relative overflow-hidden tech-border shadow-xl">
@@ -259,7 +304,6 @@ export const AnalysisResultScreen: React.FC = () => {
               </span>
             </div>
 
-            {/* Luminous Progress Bar */}
             <div className="w-full h-1.5 bg-surface-container-high rounded-full mt-3 overflow-hidden relative z-10 border border-outline-variant/30">
               <div
                 className="h-full bg-primary shadow-[0_0_10px_rgba(34,211,238,0.8)]"
@@ -268,16 +312,16 @@ export const AnalysisResultScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Executive Summary & Grounding Details */}
+          {/* Model Response & Grounding Details */}
           <div className="glass-panel rounded-xl p-5 flex flex-col gap-3 tech-border shadow-xl">
             <h3 className="font-headline-md text-base font-bold text-on-surface flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary text-[20px]">analytics</span>
-              Executive Summary
+              <span className="material-symbols-outlined text-primary text-[20px]">smart_toy</span>
+              Model Response Summary
             </h3>
 
-            <p className="font-body-sm text-xs text-on-surface-variant leading-relaxed">
-              {session.executiveSummary}
-            </p>
+            <div className="max-h-60 overflow-y-auto pr-1">
+              {renderFormattedText(session.executiveSummary)}
+            </div>
 
             {/* Grounding Observations */}
             <div className="space-y-2 pt-1">
