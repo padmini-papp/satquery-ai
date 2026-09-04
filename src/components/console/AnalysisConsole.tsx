@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { STITCH_IMAGES, DEFAULT_TELEMETRY, DEFAULT_DETECTED_ENTITIES } from '../../services/mockAnalysisService';
+import { STITCH_IMAGES } from '../../services/mockAnalysisService';
 import { DetectionParameter } from '../../types';
 
 export const AnalysisConsole: React.FC = () => {
@@ -16,6 +16,7 @@ export const AnalysisConsole: React.FC = () => {
     currentImage,
     setCurrentImage,
     addUploadedFile,
+    session,
   } = useApp();
 
   const [inputQuery, setInputQuery] = useState('');
@@ -307,16 +308,18 @@ export const AnalysisConsole: React.FC = () => {
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="bg-surface-container-highest/40 border border-outline-variant/30 p-2.5 rounded tech-border">
               <div className="font-mono-label text-[10px] text-on-surface-variant/70">ALTITUDE</div>
-              <div className="font-mono-data text-primary text-base font-bold">{DEFAULT_TELEMETRY.altitude}</div>
+              <div className="font-mono-data text-primary text-base font-bold">450.2 KM</div>
             </div>
             <div className="bg-surface-container-highest/40 border border-outline-variant/30 p-2.5 rounded tech-border">
               <div className="font-mono-label text-[10px] text-on-surface-variant/70">VELOCITY</div>
-              <div className="font-mono-data text-tertiary text-base font-bold">{DEFAULT_TELEMETRY.velocity}</div>
+              <div className="font-mono-data text-tertiary text-base font-bold">7.66 KM/S</div>
             </div>
             <div className="bg-surface-container-highest/40 border border-outline-variant/30 p-2.5 rounded col-span-2 flex justify-between items-center">
               <div>
                 <div className="font-mono-label text-[10px] text-on-surface-variant/70">SENSOR / PLATFORM</div>
-                <div className="font-mono-data text-on-surface text-xs font-medium">{DEFAULT_TELEMETRY.sensor}</div>
+                <div className="font-mono-data text-on-surface text-xs font-medium">
+                  {session?.sensor || 'GeoChat-7B (VLM Gateway)'}
+                </div>
               </div>
               <span className="font-mono-data text-[10px] text-secondary border border-secondary/30 px-1.5 py-0.5 rounded">
                 Sentinel-2
@@ -324,31 +327,35 @@ export const AnalysisConsole: React.FC = () => {
             </div>
           </div>
 
-          {/* Detected Entities Tags */}
+          {/* Detected Entities / Categories Tags */}
           <div className="mt-3">
             <div className="font-mono-label text-[10px] text-on-surface-variant/70 mb-1.5 uppercase">
               DETECTED ENTITIES IN VIEWPORT
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {DEFAULT_DETECTED_ENTITIES.map((ent) => (
-                <span
-                  key={ent.id}
-                  className={`px-2 py-0.5 rounded font-mono-label text-[10px] flex items-center gap-1 border ${
-                    ent.type === 'high'
-                      ? 'bg-tertiary/10 border-tertiary/30 text-tertiary'
-                      : ent.type === 'medium'
-                      ? 'bg-secondary/10 border-secondary/30 text-secondary'
-                      : 'bg-error/10 border-error/30 text-error'
-                  }`}
-                >
+              {session?.categories && session.categories.length > 0 ? (
+                session.categories.map((cat, idx) => (
                   <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      ent.type === 'high' ? 'bg-tertiary' : ent.type === 'medium' ? 'bg-secondary' : 'bg-error'
-                    }`}
-                  ></span>
-                  {ent.label} ({ent.confidence}%)
-                </span>
-              ))}
+                    key={idx}
+                    className="px-2 py-0.5 rounded font-mono-label text-[10px] flex items-center gap-1 border bg-tertiary/10 border-tertiary/30 text-tertiary"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                    {cat.toUpperCase()} ({session.confidenceScore || 90}%)
+                  </span>
+                ))
+              ) : selectedParameters.length > 0 ? (
+                selectedParameters.map((param) => (
+                  <span
+                    key={param}
+                    className="px-2 py-0.5 rounded font-mono-label text-[10px] flex items-center gap-1 border bg-secondary/10 border-secondary/30 text-secondary"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                    {param}
+                  </span>
+                ))
+              ) : (
+                <span className="font-mono-data text-[10px] text-outline">No active detection tags</span>
+              )}
             </div>
           </div>
         </div>

@@ -51,85 +51,101 @@ export const ProcessingHistoryScreen: React.FC = () => {
       </div>
 
       {/* Grid of History Sessions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-        {filteredSessions.map((item: AnalysisSession) => (
-          <div
-            key={item.id}
-            onClick={() => selectHistorySession(item)}
-            className="glass-panel p-5 rounded-xl border border-outline-variant/40 hover:border-primary/60 transition-all cursor-pointer group tech-border relative shadow-xl hover:scale-[1.01] flex flex-col justify-between"
+      {filteredSessions.length === 0 ? (
+        <div className="glass-panel p-8 rounded-xl border border-outline-variant/30 text-center space-y-3">
+          <span className="material-symbols-outlined text-outline-variant text-[40px]">history_toggle_off</span>
+          <h3 className="font-headline-md text-base font-bold text-on-surface">NO PROCESSING HISTORY YET</h3>
+          <p className="font-body-sm text-xs text-on-surface-variant max-w-sm mx-auto">
+            No historical session logs recorded yet. Execute query protocols from the workspace console to record live inference sessions.
+          </p>
+          <button
+            onClick={() => setCurrentScreen('console')}
+            className="px-4 py-2 bg-primary-container text-surface-dim font-mono-label text-xs font-bold rounded hover:bg-primary-fixed-dim transition-all"
           >
-            {/* 4 Corner L-Brackets */}
-            <div className="corner-tl"></div>
-            <div className="corner-tr"></div>
-            <div className="corner-bl"></div>
-            <div className="corner-br"></div>
+            START NEW ANALYSIS
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
+          {filteredSessions.map((item: AnalysisSession) => (
+            <div
+              key={item.id}
+              onClick={() => selectHistorySession(item)}
+              className="glass-panel p-5 rounded-xl border border-outline-variant/40 hover:border-primary/60 transition-all cursor-pointer group tech-border relative shadow-xl hover:scale-[1.01] flex flex-col justify-between"
+            >
+              {/* 4 Corner L-Brackets */}
+              <div className="corner-tl"></div>
+              <div className="corner-tr"></div>
+              <div className="corner-bl"></div>
+              <div className="corner-br"></div>
 
-            <div>
-              {/* Card Header */}
-              <div className="flex justify-between items-start mb-3">
-                <div>
-                  <span className="font-mono-data text-[10px] text-primary/80 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
-                    ID: {item.targetId}
-                  </span>
-                  <h3 className="font-headline-md text-base sm:text-lg font-bold text-on-surface group-hover:text-primary transition-colors mt-1.5">
-                    {item.targetTitle}
-                  </h3>
-                </div>
-
-                <div className="text-right">
-                  <div className="font-display-lg text-xl font-bold text-tertiary">
-                    {item.confidenceScore}%
+              <div>
+                {/* Card Header */}
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <span className="font-mono-data text-[10px] text-primary/80 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
+                      ID: {item.targetId}
+                    </span>
+                    <h3 className="font-headline-md text-base sm:text-lg font-bold text-on-surface group-hover:text-primary transition-colors mt-1.5">
+                      {item.targetTitle}
+                    </h3>
                   </div>
-                  <span className="font-mono-data text-[9px] text-outline">CONFIDENCE</span>
+
+                  <div className="text-right">
+                    <div className="font-display-lg text-xl font-bold text-tertiary">
+                      {item.confidenceScore}%
+                    </div>
+                    <span className="font-mono-data text-[9px] text-outline">CONFIDENCE</span>
+                  </div>
                 </div>
+
+                {/* Satellite Thumbnail & Metadata Preview */}
+                <div className="flex gap-3 mb-3">
+                  <div
+                    className="w-24 h-20 rounded bg-cover bg-center border border-outline-variant/40 shrink-0 relative overflow-hidden"
+                    style={{ backgroundImage: `url('${item.imageryUrl}')` }}
+                  >
+                    <div className="absolute inset-0 bg-primary/10 group-hover:bg-transparent transition-colors"></div>
+                  </div>
+
+                  <div className="flex-1 space-y-1 font-mono-data text-[11px] text-on-surface-variant">
+                    <div className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[14px] text-secondary">location_on</span>
+                      <span className="text-on-surface">{item.coordinates}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[14px] text-tertiary">sensors</span>
+                      <span>{item.sensor}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="material-symbols-outlined text-[14px] text-outline">schedule</span>
+                      <span>{item.date}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Brief Summary */}
+                <p className="font-body-sm text-xs text-on-surface-variant/90 line-clamp-2 leading-relaxed">
+                  {item.executiveSummary}
+                </p>
               </div>
 
-              {/* Satellite Thumbnail & Metadata Preview */}
-              <div className="flex gap-3 mb-3">
-                <div
-                  className="w-24 h-20 rounded bg-cover bg-center border border-outline-variant/40 shrink-0 relative overflow-hidden"
-                  style={{ backgroundImage: `url('${item.imageryUrl}')` }}
-                >
-                  <div className="absolute inset-0 bg-primary/10 group-hover:bg-transparent transition-colors"></div>
-                </div>
+              {/* Bottom Action Footer */}
+              <div className="pt-4 mt-3 border-t border-outline-variant/20 flex justify-between items-center text-xs">
+                <span className="font-mono-label text-[10px] text-tertiary flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+                  VERIFIED TARGET
+                </span>
 
-                <div className="flex-1 space-y-1 font-mono-data text-[11px] text-on-surface-variant">
-                  <div className="flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[14px] text-secondary">location_on</span>
-                    <span className="text-on-surface">{item.coordinates}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[14px] text-tertiary">sensors</span>
-                    <span>{item.sensor}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[14px] text-outline">schedule</span>
-                    <span>{item.date}</span>
-                  </div>
-                </div>
+                <span className="font-mono-label text-xs text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1 font-semibold">
+                  <span>INSPECT INTEL</span>
+                  <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                </span>
               </div>
-
-              {/* Brief Summary */}
-              <p className="font-body-sm text-xs text-on-surface-variant/90 line-clamp-2 leading-relaxed">
-                {item.executiveSummary}
-              </p>
             </div>
-
-            {/* Bottom Action Footer */}
-            <div className="pt-4 mt-3 border-t border-outline-variant/20 flex justify-between items-center text-xs">
-              <span className="font-mono-label text-[10px] text-tertiary flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
-                VERIFIED TARGET
-              </span>
-
-              <span className="font-mono-label text-xs text-primary group-hover:translate-x-1 transition-transform flex items-center gap-1 font-semibold">
-                <span>INSPECT INTEL</span>
-                <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Return to Workspace Shortcut */}
       <div className="mt-8 text-center">

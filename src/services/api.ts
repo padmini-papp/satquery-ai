@@ -1,227 +1,157 @@
-// API Service for SatQuery AI Backend Integration
+// API Service for SatQuery AI Model Gateway
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://denture-snugly-ending.ngrok-free.dev';
+
+// All model slugs available on the gateway
+export const MODEL_SLUGS = ['geochat', 'changechat', 'prithvi', 'sar_fusion', 'bigearthnet'] as const;
+export type ModelSlug = typeof MODEL_SLUGS[number];
+
+// Common headers for all requests (ngrok interstitial bypass)
+const HEADERS: Record<string, string> = {
+  'ngrok-skip-browser-warning': 'true',
+};
+
+// --- Response Types ---
 
 export interface HealthResponse {
   status: string;
-  service?: string;
-  mode?: string;
-  llm_provider?: string;
-}
-
-export interface ModelCapabilities {
-  name: string;
-  type: string;
-  tasks: string[];
-  supported_modalities: string[];
-  requires_images: number;
-}
-
-export interface ModelInfo {
-  name: string;
-  healthy: boolean;
-  capabilities: ModelCapabilities;
-}
-
-export interface AnalyzeSubmitResponse {
-  job_id: string;
-  status: string;
-  message: string;
-  image_count: number;
-}
-
-export interface EvidenceItem {
-  claim: string;
-  bbox: [number, number, number, number]; // [y1, x1, y2, x2]
-  source_tool: string;
-  confidence: number;
-  type?: string;
-}
-
-export interface ConfidenceData {
-  score: number;
-  level: string;
-  factors?: string[];
-}
-
-export interface ExecutionSummary {
-  task: string;
   models: string[];
-  tools: string[];
-  processing_time_ms: number;
 }
 
-export interface JobResult {
-  job_id: string;
-  answer: string;
-  task: string;
-  observations?: string[];
-  confidence: ConfidenceData;
-  evidence: EvidenceItem[];
-  artifacts?: any[];
-  execution_summary: ExecutionSummary;
-}
-
-export interface JobStatusResponse {
-  job_id: string;
-  status: 'queued' | 'processing' | 'completed' | 'failed';
-  error?: string | null;
-  result?: JobResult;
-}
-
-export interface BackendTraceItem {
-  step: number;
-  event: string;
+export interface ModelHealthResponse {
   status: string;
-  duration_ms?: number;
-  model?: string;
+  model: string;
+  gpu?: string;
 }
 
-export interface JobTraceResponse {
-  job_id: string;
-  trace: BackendTraceItem[];
+export interface PredictResultData {
+  response_text: string;
+  grounded_boxes: number[][];
+  confidence: number;
+  identified_categories: string[];
 }
 
-export interface JobEvidenceResponse {
-  job_id: string;
-  evidence: EvidenceItem[];
+export interface PredictResponse {
+  result: PredictResultData;
+  artifacts: any[];
 }
 
-// Health check
+export interface PredictRequest {
+  image_base64?: string;
+  query: string;
+  task?: string;
+  parameters?: Record<string, any>;
+}
+
+// --- API Functions ---
+
+// Gateway health check
 export async function checkHealth(): Promise<HealthResponse> {
-  const res = await fetch(`${API_BASE}/health`);
-  if (!res.ok) {
-    throw new Error(`Health check failed with status ${res.status}`);
-  }
+  const res = await fetch(`${API_BASE}/health`, { headers: HEADERS });
+  if (!res.ok) throw new Error(`Health check failed: ${res.status}`);
   return res.json();
 }
 
-// List available models
-export async function getModels(): Promise<ModelInfo[]> {
-  const res = await fetch(`${API_BASE}/api/v1/models`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch models with status ${res.status}`);
-  }
+// Per-model health check
+export async function checkModelHealth(model: string): Promise<ModelHealthResponse> {
+  const res = await fetch(`${API_BASE}/${model}/v1/health`, { headers: HEADERS });
+  if (!res.ok) throw new Error(`Model health check failed for ${model}: ${res.status}`);
   return res.json();
 }
 
-// Submit analysis — upload image + query
-export async function submitAnalysis(
-  imageFile: File | Blob,
+// List available models from the gateway health endpoint
+export async function listModels(): Promise<string[]> {
+  const health = await checkHealth();
+  return health.models || [];
+}
+
+// Run prediction on a specific model (synchronous — returns result directly)
+export async function predictWithModel(
+  model: string,
+  imageBase64: string,
   query: string,
-  metadata: Record<string, any> | null = null
-): Promise<AnalyzeSubmitResponse> {
-  const formData = new FormData();
-  formData.append('query', query);
+  task: string = 'single_image_vqa',
+  parameters: Record<string, any> = {}
+): Promise<PredictResponse> {
+  const body: PredictRequest = {
+    image_base64: imageBase64,
+    query,
+    task,
+    parameters,
+  };
 
-  // If imageFile is a File, preserve filename, otherwise give default filename
-  if (imageFile instanceof File) {
-    formData.append('images', imageFile);
-  } else {
-    formData.append('images', imageFile, 'satellite_imagery.png');
-  }
-
-  if (metadata) {
-    formData.append('metadata', JSON.stringify(metadata));
-  }
-
-  const res = await fetch(`${API_BASE}/api/v1/analyze`, {
+  const res = await fetch(`${API_BASE}/${model}/v1/predict`, {
     method: 'POST',
-    body: formData,
+    headers: {
+      ...HEADERS,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {
     const errText = await res.text();
-    throw new Error(`Submit analysis failed: ${errText}`);
+    throw new Error(`Predict failed for ${model}: ${errText}`);
   }
 
-  return res.json(); // { job_id, status, message, image_count }
+  return res.json();
 }
 
-// For change detection — upload two images
-export async function submitChangeAnalysis(
-  imageFile1: File | Blob,
-  imageFile2: File | Blob,
-  query: string,
-  metadata: Record<string, any> | null = null
-): Promise<AnalyzeSubmitResponse> {
-  const formData = new FormData();
-  formData.append('query', query);
-
-  if (imageFile1 instanceof File) {
-    formData.append('images', imageFile1);
-  } else {
-    formData.append('images', imageFile1, 'satellite_t1.png');
-  }
-
-  if (imageFile2 instanceof File) {
-    formData.append('images', imageFile2);
-  } else {
-    formData.append('images', imageFile2, 'satellite_t2.png');
-  }
-
-  if (metadata) {
-    formData.append('metadata', JSON.stringify(metadata));
-  }
-
-  const res = await fetch(`${API_BASE}/api/v1/analyze`, {
-    method: 'POST',
-    body: formData,
+// Convert a File to a base64 string (without the data URI prefix)
+export function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      const base64 = dataUrl.split(',')[1] || dataUrl;
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
   });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Submit change analysis failed: ${errText}`);
-  }
-
-  return res.json();
 }
 
-// Poll for job result
-export async function getJobResult(jobId: string): Promise<JobStatusResponse> {
-  const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}`);
-  if (!res.ok) {
-    throw new Error(`Get job result failed for ${jobId}: status ${res.status}`);
+// Convert an image URL or Blob URL to a base64 string
+export async function imageUrlToBase64(url: string): Promise<string> {
+  if (url.startsWith('data:image')) {
+    return url.split(',')[1] || '';
   }
-  return res.json();
-}
-
-// Get execution trace
-export async function getJobTrace(jobId: string): Promise<JobTraceResponse> {
-  const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/trace`);
-  if (!res.ok) {
-    throw new Error(`Get job trace failed for ${jobId}: status ${res.status}`);
-  }
-  return res.json();
-}
-
-// Get evidence items
-export async function getJobEvidence(jobId: string): Promise<JobEvidenceResponse> {
-  const res = await fetch(`${API_BASE}/api/v1/jobs/${jobId}/evidence`);
-  if (!res.ok) {
-    throw new Error(`Get job evidence failed for ${jobId}: status ${res.status}`);
-  }
-  return res.json();
-}
-
-// Helper utility to convert image URL to Blob for HTTP API submission
-export async function fetchImageUrlAsBlob(imageUrl: string): Promise<Blob> {
   try {
-    const response = await fetch(imageUrl);
-    if (response.ok) {
-      return await response.blob();
-    }
-  } catch (err) {
-    console.warn('Could not fetch image URL as Blob:', err);
+    const res = await fetch(url, { headers: HEADERS });
+    if (!res.ok) throw new Error(`Failed to fetch image: ${res.status}`);
+    const blob = await res.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        const base64 = dataUrl.split(',')[1] || dataUrl;
+        resolve(base64);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    console.warn('Could not convert image URL to base64 directly, returning empty string fallback:', e);
+    return '';
   }
-  // Create 1x1 transparent PNG as fallback blob
-  const transparentPngBase64 =
-    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
-  const byteCharacters = atob(transparentPngBase64);
-  const byteNumbers = new Array(byteCharacters.length);
-  for (let i = 0; i < byteCharacters.length; i++) {
-    byteNumbers[i] = byteCharacters.charCodeAt(i);
-  }
-  const byteArray = new Uint8Array(byteNumbers);
-  return new Blob([byteArray], { type: 'image/png' });
 }
+
+// Select the best model for a given query
+export function selectModelForQuery(query: string): ModelSlug {
+  const lower = query.toLowerCase();
+  if (lower.includes('change') || lower.includes('temporal') || lower.includes('before') || lower.includes('after')) {
+    return 'changechat';
+  }
+  if (lower.includes('sar') || lower.includes('radar') || lower.includes('fusion')) {
+    return 'sar_fusion';
+  }
+  if (lower.includes('classify') || lower.includes('land cover') || lower.includes('land use') || lower.includes('category')) {
+    return 'bigearthnet';
+  }
+  if (lower.includes('flood') || lower.includes('wildfire') || lower.includes('disaster') || lower.includes('climate')) {
+    return 'prithvi';
+  }
+  // Default: GeoChat for general VQA
+  return 'geochat';
+}
+

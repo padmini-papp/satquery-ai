@@ -6,6 +6,26 @@ export const AnalysisResultScreen: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [downloading, setDownloading] = useState(false);
 
+  if (!session) {
+    return (
+      <div className="flex-1 mt-16 p-8 flex flex-col items-center justify-center min-h-[calc(100vh-64px)] bg-grid-pattern text-center">
+        <div className="glass-panel p-8 rounded-xl border border-outline-variant/30 max-w-md space-y-4">
+          <span className="material-symbols-outlined text-primary text-[48px]">radar</span>
+          <h2 className="font-headline-md text-xl font-bold text-on-surface">NO ACTIVE ANALYSIS SESSION</h2>
+          <p className="font-body-sm text-xs text-on-surface-variant">
+            No intelligence session has been generated yet. Select a target or submit a query protocol from the workspace.
+          </p>
+          <button
+            onClick={() => setCurrentScreen('console')}
+            className="w-full bg-primary-container text-surface-dim font-mono-label text-xs py-2.5 rounded font-bold hover:bg-primary-fixed-dim transition-all"
+          >
+            OPEN WORKSPACE CONSOLE
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const handleShare = () => {
     navigator.clipboard.writeText(`https://satquery.ai/intel/${session.targetId}`);
     setCopied(true);
@@ -104,7 +124,7 @@ export const AnalysisResultScreen: React.FC = () => {
             {/* Top HUD Overlay Controls */}
             <div className="absolute top-3 left-3 right-3 flex justify-between z-10 pointer-events-none">
               <div className="bg-surface/85 backdrop-blur-md px-3 py-1 border border-outline-variant/40 rounded pointer-events-auto shadow-md">
-                <span className="font-mono-label text-xs text-primary">T-MINUS 02:14:00</span>
+                <span className="font-mono-label text-xs text-primary">LIVE MODEL INFERENCE</span>
               </div>
               <div className="flex gap-1.5 pointer-events-auto">
                 <button
@@ -126,32 +146,37 @@ export const AnalysisResultScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* Change Detected Bounding Highlight */}
-            {session.evidenceItems && session.evidenceItems.length > 0 ? (
-              session.evidenceItems.map((item, idx) => {
-                const [y1, x1, y2, x2] = item.bbox && item.bbox.length === 4 ? item.bbox : [200, 220, 380, 410];
+            {/* Grounded Bounding Boxes Overlay from Backend */}
+            {session.groundedBoxes && session.groundedBoxes.length > 0 ? (
+              session.groundedBoxes.map((box, idx) => {
+                const [y1, x1, y2, x2] = box;
+                const top = y1 > 1 ? (y1 / 1000) * 100 : y1 * 100;
+                const left = x1 > 1 ? (x1 / 1000) * 100 : x1 * 100;
+                const height = y2 > 1 ? ((y2 - y1) / 1000) * 100 : (y2 - y1) * 100;
+                const width = x2 > 1 ? ((x2 - x1) / 1000) * 100 : (x2 - x1) * 100;
+
                 return (
                   <div
                     key={idx}
-                    className="absolute border-2 border-tertiary bg-tertiary/10 p-1 pointer-events-none shadow-[0_0_16px_rgba(104,245,184,0.3)] transition-all"
+                    className="absolute border-2 border-tertiary bg-tertiary/10 p-1 pointer-events-none shadow-[0_0_16px_rgba(104,245,184,0.4)] transition-all"
                     style={{
-                      top: `${Math.min(Math.max((y1 / 600) * 100, 10), 75)}%`,
-                      left: `${Math.min(Math.max((x1 / 800) * 100, 10), 75)}%`,
-                      width: `${Math.max(((x2 - x1) / 800) * 100, 15)}%`,
-                      height: `${Math.max(((y2 - y1) / 600) * 100, 15)}%`,
+                      top: `${Math.max(5, Math.min(top, 75))}%`,
+                      left: `${Math.max(5, Math.min(left, 75))}%`,
+                      width: `${Math.max(10, Math.min(width, 85))}%`,
+                      height: `${Math.max(10, Math.min(height, 85))}%`,
                     }}
                   >
                     <div className="font-mono-label text-[9px] text-black bg-tertiary px-1.5 py-0.5 rounded -top-4 left-0 absolute whitespace-nowrap font-bold">
-                      {item.claim || `EVIDENCE #${idx + 1}`} ({(item.confidence * 100).toFixed(0)}%)
+                      GROUNDED TARGET #{idx + 1} ({session.confidenceScore}%)
                     </div>
                   </div>
                 );
               })
             ) : (
-              <div className="absolute top-[32%] left-[42%] border-2 border-error bg-error/10 p-2 pointer-events-none shadow-[0_0_16px_rgba(255,180,171,0.3)]">
-                <div className="font-mono-label text-[10px] text-on-error bg-error/90 px-1.5 py-0.5 rounded -top-4 left-0 absolute whitespace-nowrap">
-                  CHANGE DETECTED // NEW STRUCTURE
-                </div>
+              <div className="absolute top-[28%] left-[38%] border border-primary bg-primary/10 p-1 pointer-events-none shadow-[0_0_12px_rgba(34,211,238,0.3)]">
+                <span className="font-mono-label text-[9px] text-primary bg-black/80 px-1 py-0.5 rounded block">
+                  TARGET LOCK // {session.modelUsed ? session.modelUsed.toUpperCase() : 'NEURAL MATCH'} ({session.confidenceScore}%)
+                </span>
               </div>
             )}
 

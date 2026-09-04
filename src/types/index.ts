@@ -49,10 +49,6 @@ export interface QueryMessage {
   confidence?: number;
 }
 
-import type { EvidenceItem, ExecutionSummary } from '../services/api';
-
-export type { EvidenceItem, ExecutionSummary };
-
 export interface AnalysisSession {
   id: string;
   targetId: string;
@@ -67,7 +63,14 @@ export interface AnalysisSession {
   verification: VerificationItem[];
   imageryUrl: string;
   traceSteps: TraceStep[];
-  evidenceItems?: EvidenceItem[];
-  executionSummary?: ExecutionSummary;
+  modelUsed?: string;
+  processingTimeMs?: number;
+  groundedBoxes?: number[][];
+  categories?: string[];
+  executionSummary?: {
+    processing_time_ms: number;
+    models?: string[];
+  };
+  evidenceItems?: any[];
 }
 
